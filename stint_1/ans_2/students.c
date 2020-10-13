@@ -17,16 +17,18 @@
 
 // };
 
-
+void seek_hospital(int id)
+{
+    
+}
 
 void *init_student(void *ptr)
 {
     int id = *((int *)ptr);
 
     int late_time = get_random_int(0, latest_arrival_permitted);
-    ;
     stu_ptr[id]->arrival_time = late_time;
-    stu_ptr[id]->curr_stat = 0;
+    //stu_ptr[id]->curr_stat = 0;
     stu_ptr[id]->rounds_already = 0;
 
     if (late_time != 0)
@@ -34,6 +36,7 @@ void *init_student(void *ptr)
         sleep(late_time);
     }
     pthread_mutex_init(&(stu_ptr[id]->mutex), NULL);
+    seek_hospital(id);
 
     return NULL;
 }

@@ -41,11 +41,14 @@ void prep_stock(int id)
 void dispatch_stock(int id)
 {
 
+    //`if` should suffice I think, but still
     while (comp_ptr[id]->done_batches < comp_ptr[id]->curr_batches_num)
     {
         pthread_cond_wait(&(comp_ptr[id]->cv),&(comp_ptr[id]->mutex));
     }
     pthread_mutex_unlock(&(comp_ptr[id]->mutex));
+    
+    //Reached here -> all of previous dispatch has been consumed-> time to manufacture again
 }
 
 void *init_company(void *ptr)
