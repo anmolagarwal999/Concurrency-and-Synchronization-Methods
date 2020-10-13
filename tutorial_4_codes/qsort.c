@@ -12,7 +12,7 @@
 #include <pthread.h>
 #include <inttypes.h>
 #include <math.h>
-
+#define part printf("--------------------------------\n");
 void swap(int *a, int *b)
 {
      int t = *a;
@@ -111,6 +111,15 @@ void *threaded_quickSort(void *a)
      if (l > r)
           return NULL;
 
+     // int sz = sizeof(arr) / sizeof(arr[0]);
+     // printf("initial sz is %d\n",sz);
+     // printf("Eleemnt in threaded quick_sort are \n");
+     // for (int i = 0; i < sz; i++)
+     // {
+     //      printf("Elem is %d\n", arr[i]);
+     // }
+     // return NULL;
+
      int ind = partition(arr, l, r);
      //sort left half array
      struct arg a1;
@@ -147,17 +156,17 @@ void runSorts(long long int n)
           scanf("%d", arr + i);
      }
 
+     //////////////////////////////////////////////////////////////////
      int brr[n + 1];
      for (int i = 0; i < n; i++)
      {
           brr[i] = arr[i];
      }
-
+     part;
      printf("Running concurrent_quicksort for n = %lld\n", n);
      clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
      long double st = ts.tv_nsec / (1e9) + ts.tv_sec;
 
-//////////////////////////////////////////////////////////////////
      //multiprocess mergesort
      quickSort(arr, 0, n - 1);
      for (int i = 0; i < n; i++)
@@ -169,7 +178,9 @@ void runSorts(long long int n)
      long double en = ts.tv_nsec / (1e9) + ts.tv_sec;
      printf("time = %Lf\n", en - st);
      long double t1 = en - st;
-
+     part;
+     ////////////////////////////////////////////////////////////////////////////
+     part;
      pthread_t tid;
      struct arg a;
      a.l = 0;
@@ -179,7 +190,6 @@ void runSorts(long long int n)
      clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
      st = ts.tv_nsec / (1e9) + ts.tv_sec;
 
-////////////////////////////////////////////////////////////////////////////
      //multithreaded mergesort
      pthread_create(&tid, NULL, threaded_quickSort, &a);
      pthread_join(tid, NULL);
@@ -190,15 +200,17 @@ void runSorts(long long int n)
      printf("\n");
      clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
      en = ts.tv_nsec / (1e9) + ts.tv_sec;
-     printf("time = %Lf\n", en - st);
+     printf("time = %Lf\n\n", en - st);
      long double t2 = en - st;
+     part;
 
+     ///////////////////////////////////////////////////////////////////////////////
+     part;
      printf("Running normal_quicksort for n = %lld\n", n);
      clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
      st = ts.tv_nsec / (1e9) + ts.tv_sec;
 
-///////////////////////////////////////////////////////////////////////////////
-     // normal mergesort
+     // normal quicksort
      normal_quickSort(brr, 0, n - 1);
      for (int i = 0; i < n; i++)
      {
@@ -211,6 +223,7 @@ void runSorts(long long int n)
      long double t3 = en - st;
 
      printf("normal_quicksort ran:\n\t[ %Lf ] times faster than concurrent_quicksort\n\t[ %Lf ] times faster than threaded_concurrent_quicksort\n\n\n", t1 / t3, t2 / t3);
+     part;
      shmdt(arr);
      return;
 }
