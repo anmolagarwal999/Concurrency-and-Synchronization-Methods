@@ -30,4 +30,5 @@ void* init_hospitals(void *ptr)
 
 
     
+    return NULL;
 }

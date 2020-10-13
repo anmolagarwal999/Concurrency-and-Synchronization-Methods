@@ -16,9 +16,12 @@ struct company
     int thr_id;
     int curr_batches_num;
     int left_batches_num;
+    int done_batches;
     int capacity_of_batches;
     long double prob_of_success;
     pthread_mutex_t mutex;
+    pthread_cond_t cv; 
+
 
 };
 
