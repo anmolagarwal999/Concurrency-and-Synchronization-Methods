@@ -7,18 +7,25 @@ extern int num_hospitals;
 extern int num_companies;
 extern int num_students;
 
-struct comp
+extern int latest_arrival_permitted;
+
+struct company
 {
+    pthread_t thread_obj;
     int id;
     int thr_id;
-    int curr_batches;
-    int left_batches;
+    int curr_batches_num;
+    int left_batches_num;
     int capacity_of_batches;
     long double prob_of_success;
+    pthread_mutex_t mutex;
+
 };
 
-struct hosp
+struct hospital
 {
+    pthread_t thread_obj;
+
     int id;
     int thr_id;
 
@@ -27,10 +34,14 @@ struct hosp
     int left_vaccines;
     int curr_slots;
     int left_slots;
+    pthread_mutex_t mutex;
+
 };
 
-struct stu
+struct student
 {
+    pthread_t thread_obj;
+
     int id;
     int thr_id;
 
@@ -40,6 +51,14 @@ struct stu
     //2-> successful vaccination
     int curr_stat;
     int rounds_already;
+    pthread_mutex_t mutex;
+
 };
+
+# define max_inp_to_entities 500
+
+struct company *comp_ptr[max_inp_to_entities];
+struct hospital *hosp_ptr[max_inp_to_entities];
+struct student *stu_ptr[max_inp_to_entities];
 
 #endif
