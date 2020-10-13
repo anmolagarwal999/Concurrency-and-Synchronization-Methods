@@ -1,0 +1,5 @@
+#ifndef HOSPITALS_HEADER
+#define HOSPITALS_HEADER
+
+
+#endif
