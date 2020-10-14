@@ -40,6 +40,7 @@ struct hospital
     int curr_slots;
     int left_slots;
     pthread_mutex_t mutex;
+    int curr_served_students[10];
 };
 
 struct student
@@ -56,6 +57,7 @@ struct student
     //2-> successful vaccination
     int curr_stat;
     int rounds_already;
+    int vaccine_comp_id;
     pthread_mutex_t mutex;
 };
 

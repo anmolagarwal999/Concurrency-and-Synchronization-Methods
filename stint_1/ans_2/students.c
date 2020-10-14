@@ -19,7 +19,15 @@
 
 void seek_hospital(int id)
 {
-    
+    stu_ptr[id]->curr_stat = 0; //student has started waiting
+    pthread_mutex_lock(&hopeful_mutex);
+    hopeful_students_num++;
+    pthread_mutex_unlock(&hopeful_mutex);
+
+    while (true)
+    {
+        //keep on trying unless 3 failures or a success
+    }
 }
 
 void *init_student(void *ptr)

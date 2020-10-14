@@ -30,7 +30,7 @@ void buy_batch_from_company(int id)
             while (!found_supplier)
             {
 
-                //try locking, but if not available, then rather than waiting move on
+                //try locking, but if not available, then rather than waiting, move on
                 if (pthread_mutex_trylock(&(comp_ptr[curr_check_id]->mutex)) == EBUSY)
                 {
                     //EBUSY  The mutex could not be acquired because it was already locked.
@@ -38,6 +38,7 @@ void buy_batch_from_company(int id)
                 }
                 else
                 {
+                    // if company has an unsold batch left
                     if (comp_ptr[curr_check_id]->left_batches_num > 0)
                     {
                         hosp_ptr[id]->tot_vaccines = comp_ptr[curr_check_id]->capacity_of_batches;
@@ -48,8 +49,8 @@ void buy_batch_from_company(int id)
                     }
 
                     pthread_mutex_unlock(&(comp_ptr[curr_check_id]->mutex));
-                    curr_check_id = (curr_check_id + 1) % num_companies;
                 }
+                curr_check_id = (curr_check_id + 1) % num_companies;
             }
 
             //A batch has been bought from a company, now time to vaccinate
@@ -61,16 +62,51 @@ void buy_batch_from_company(int id)
 
 void vaccinate_students(int id)
 {
+
+    //on entering this function, hospital obviously has some number of new vaccines
     while (hosp_ptr[id]->left_vaccines > 0)
     {
         int curr_slots = get_random_int(1, (int)min(8, hosp_ptr[id]->left_vaccines));
-        int filled_slots=0;
-        int curr_stu_id=0;
-        while(filled_slots<curr_slots && hopeful_students_num>0)
+        int filled_slots = 0;
+        int curr_stu_id = 0;
+        for (int j = 0; j < 10; j++)
+        {
+            hosp_ptr[id]->curr_served_students[j] = -1;
+        }
+        while (filled_slots < curr_slots && hopeful_students_num > 0)
         {
             //start filling students
-            
+            //try locking, but if not available, then rather than waiting, move on
+            if (pthread_mutex_trylock(&(stu_ptr[curr_stu_id]->mutex)) == EBUSY)
+            {
+                //EBUSY  The mutex could not be acquired because it was already locked.
+                printf("Student id %d is busy as is currently in contact with another hospital, hence did not answer call\n");
+            }
+            else
+            {
+                // if student's current status is waiting
+                if (stu_ptr[curr_stu_id]->curr_stat == 0)
+                {
+                    stu_ptr[curr_stu_id]->curr_stat = 1; //ongoing
+                    pthread_mutex_lock(&hopeful_mutex);
+                    hopeful_students_num--;
+                    pthread_mutex_unlock(&hopeful_mutex);
+                    hosp_ptr[id]->curr_served_students[filled_slots]=curr_stu_id;
+                    filled_slots++;
+                    stu_ptr[curr_stu_id]->vaccine_comp_id=hosp_ptr[id]->partner_company;
+                }
+
+                pthread_mutex_unlock(&(comp_ptr[curr_stu_id]->mutex));
+            }
+            curr_stu_id = (curr_stu_id + 1) % num_students;
         }
+
+        //either all slots have been filled or no students were currently waiting
+
+        //LOCK DOEs not seem ro be required for this though
+        pthread_mutex_lock(&(hosp_ptr[id]->mutex));
+        hosp_ptr[id]->left_vaccines -= filled_slots;
+        pthread_mutex_unlock(&(hosp_ptr[id]->mutex));
     }
 }
 
@@ -83,6 +119,10 @@ void *init_hospitals(void *ptr)
     hosp_ptr[id]->partner_company = -1;
     hosp_ptr[id]->tot_vaccines = 0;
     pthread_mutex_init(&(hosp_ptr[id]->mutex), NULL);
+    for (int j = 0; j < 10; j++)
+    {
+        hosp_ptr[id]->curr_served_students[j] = -1;
+    }
 
     buy_batch_from_company(id);
     return NULL;
