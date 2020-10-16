@@ -83,9 +83,7 @@ void *init_company(void *ptr)
     comp_ptr[id]->capacity_of_batches = 0;
     comp_ptr[id]->curr_batches_num = 0;
     comp_ptr[id]->left_batches_num = 0;
-    pthread_mutex_init(&(comp_ptr[id]->mutex), NULL);
-    pthread_cond_init(&(comp_ptr[id]->cv), NULL);
-
+ 
     prep_stock(id);
 
     return NULL;

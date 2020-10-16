@@ -3,7 +3,7 @@
 int num_hospitals;
 int num_companies;
 int num_students;
-int latest_arrival_permitted = 8;
+int latest_arrival_permitted = 15;
 int tot_conclusions_left;
 int hopeful_students_num;
 pthread_mutex_t conclusions_mutex;
@@ -44,6 +44,9 @@ int main()
         // debug(i);
         comp_ptr[i] = (struct company *)malloc(sizeof(struct company));
         scanf("%Lf", &comp_ptr[i]->prob_of_success);
+        pthread_mutex_init(&(comp_ptr[i]->mutex), NULL);
+        pthread_cond_init(&(comp_ptr[i]->cv), NULL);
+
         comp_ptr[i]->id = i;
     }
     for (i = 0; i < num_companies; i++)
@@ -62,6 +65,7 @@ int main()
         stu_ptr[i] = (struct student *)malloc(sizeof(struct student));
         stu_ptr[i]->id = i;
         stu_ptr[i]->curr_stat = -1; //hasn't yet arrived
+        pthread_mutex_init(&(stu_ptr[i]->mutex), NULL);
         stu_ptr[i]->thr_id = pthread_create(&(stu_ptr[i]->thread_obj), NULL, init_student, (void *)(&(stu_ptr[i]->id)));
     }
 

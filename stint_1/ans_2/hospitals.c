@@ -43,7 +43,7 @@ void buy_batch_from_company(int id)
                 if (pthread_mutex_trylock(&(comp_ptr[curr_check_id]->mutex)) == EBUSY)
                 {
                     //EBUSY  The mutex could not be acquired because it was already locked.
-                    printf("Company with id %d is busy deciding transit changes, hence did not answer call\n",curr_check_id);
+                    printf("Company with id %d is busy deciding transit changes, hence did not answer call from centre %d\n",curr_check_id,id);
                 }
                 else
                 {

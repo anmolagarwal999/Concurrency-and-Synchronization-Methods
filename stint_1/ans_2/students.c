@@ -35,9 +35,9 @@ void seek_hospital(int id)
     while (true)
     {
         //keep on trying unless 3 failures or a success
-        printf(ANSI_GREEN"Student id %d\t has arrived for round %d of vaccination\n" ANSI_RESET, id, stu_ptr[id]->rounds_already + 1);
+        printf(ANSI_GREEN "Student id %d\t has arrived for round %d of vaccination\n" ANSI_RESET, id, stu_ptr[id]->rounds_already + 1);
         stu_ptr[id]->curr_stat = 0; //student has started waiting
-        printf(ANSI_GREEN"Student id %d\t is waiting to be allocated a slot in a Vaccination Zone\n" ANSI_RESET, id);
+        printf(ANSI_GREEN "Student id %d\t is waiting to be allocated a slot in a Vaccination Zone\n" ANSI_RESET, id);
 
         pthread_mutex_lock(&hopeful_mutex);
         hopeful_students_num++;
@@ -52,8 +52,8 @@ void seek_hospital(int id)
         antibody_developed = get_random_answer(prob_success);
         if (antibody_developed)
         {
-            printf(ANSI_CYAN"Student %d has tested positive for antibodies\n"ANSI_RESET,id);
-            printf(ANSI_BLUE"Student %d can now attend college\n"ANSI_RESET,id);
+            printf(ANSI_CYAN "Student %d has tested positive for antibodies\n" ANSI_RESET, id);
+            printf(ANSI_BLUE "Student %d can now attend college\n" ANSI_RESET, id);
             pthread_mutex_lock(&conclusions_mutex);
             tot_conclusions_left--;
             pthread_mutex_unlock(&conclusions_mutex);
@@ -61,7 +61,7 @@ void seek_hospital(int id)
         }
         else
         {
-            printf(ANSI_CYAN"Student %d has tested negative for antibodies in his %d th attempt\n"ANSI_RESET,id, stu_ptr[id]->rounds_already);
+            printf(ANSI_CYAN "Student %d has tested negative for antibodies in his %d th attempt\n" ANSI_RESET, id, stu_ptr[id]->rounds_already);
         }
 
         if (stu_ptr[id]->rounds_already == 3)
@@ -72,7 +72,7 @@ void seek_hospital(int id)
     pthread_mutex_lock(&conclusions_mutex);
     tot_conclusions_left--;
     pthread_mutex_unlock(&conclusions_mutex);
-    printf(ANSI_BLUE"Student is unable to develop anibodies even after 3 attempts,he has to return home\n"ANSI_RESET);
+    printf(ANSI_BLUE "Student %d   is unable to develop anibodies even after 3 attempts,he has to return home\n" ANSI_RESET,id);
     return;
 
     //update conclusions mutex
@@ -89,10 +89,9 @@ void *init_student(void *ptr)
 
     if (late_time != 0)
     {
-       // sleep(late_time);
+        sleep(late_time);
     }
-   // printf(ANSI_GREEN"Student %d\t HAS entered the simulation\n"ANSI_RESET,id);
-    pthread_mutex_init(&(stu_ptr[id]->mutex), NULL);
+    // printf(ANSI_GREEN"Student %d\t HAS entered the simulation\n"ANSI_RESET,id);
     seek_hospital(id);
 
     return NULL;
