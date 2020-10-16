@@ -4,5 +4,7 @@
 
 
 void* init_company(void *ptr);
+void dispatch_stock(int id);
+
 
 #endif

@@ -3,6 +3,15 @@
 
 #include <stdbool.h>
 
+//https://stackoverflow.com/questions/3219393/stdlib-and-colored-output-in-c
+#define ANSI_RED     "\033[1;31m"
+#define ANSI_GREEN  "\033[1;32m"
+#define ANSI_YELLOW  "\x1b[33m"
+#define ANSI_BLUE    "\x1b[34m"
+#define ANSI_MAGENTA "\x1b[35m"
+#define ANSI_CYAN    "\x1b[36m"
+#define ANSI_RESET   "\x1b[0m"
+
 extern int num_hospitals;
 extern int num_companies;
 extern int num_students;
