@@ -25,14 +25,14 @@ void take_input()
     printf("Enter number of students: ");
     scanf("%d", &num_students);
     tot_conclusions_left = num_students;
-   // hopeful_students_num = 0;
+    // hopeful_students_num = 0;
     pthread_mutex_init(&conclusions_mutex, NULL);
     pthread_mutex_init(&hopeful_mutex, NULL);
 }
 
 int main()
 {
-    int i, j, k, t;
+    int i;
     //srand(time(0));
 
     printf("Inside main\n");
@@ -41,7 +41,7 @@ int main()
     // intitialize companies and take their probalities
     for (i = 0; i < num_companies; i++)
     {
-        debug(i);
+        // debug(i);
         comp_ptr[i] = (struct company *)malloc(sizeof(struct company));
         scanf("%Lf", &comp_ptr[i]->prob_of_success);
         comp_ptr[i]->id = i;
@@ -56,7 +56,7 @@ int main()
     //intialize students
     for (i = 0; i < num_students; i++)
     {
-        debug(i);
+        // debug(i);
         fflush(stdout);
 
         stu_ptr[i] = (struct student *)malloc(sizeof(struct student));
@@ -84,15 +84,30 @@ int main()
         pthread_join(stu_ptr[i]->thread_obj, NULL);
     }
 
+    printf("STUDENTS HAVE JOINED\n");
+    fflush(stdout);
+
     for (int i = 0; i < num_companies; i++)
     {
+        printf("Waking comp with id %d\n", i);
+        pthread_mutex_lock(&(comp_ptr[i]->mutex));
+        pthread_cond_signal(&(comp_ptr[i]->cv));
+        pthread_mutex_unlock(&(comp_ptr[i]->mutex));
         pthread_join(comp_ptr[i]->thread_obj, NULL);
+        printf("comp with id TERMINATED%d\n", i);
     }
+
+    printf("COMPANIES HAVE JOINED\n");
+    fflush(stdout);
 
     for (int i = 0; i < num_hospitals; i++)
     {
+
         pthread_join(hosp_ptr[i]->thread_obj, NULL);
     }
+
+    printf("HOSPITALS HAVE JOINED\n");
+    fflush(stdout);
 
     printf(ANSI_MAGENTA "Simulation Over" ANSI_RESET);
     fflush(stdout);

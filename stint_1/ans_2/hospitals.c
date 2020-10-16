@@ -35,14 +35,13 @@ void buy_batch_from_company(int id)
             curr_check_id = 0;
             while (!found_supplier)
             {
-                printf("trying to find supplier\n");
+                // printf("trying to find supplier\n");
                 //try locking, but if not available, then rather than waiting, move on
                 pthread_mutex_lock(&(comp_ptr[curr_check_id]->mutex));
                 // if company has an unsold batch left
                 if (comp_ptr[curr_check_id]->left_batches_num > 0)
                 {
-                    printf(ANSI_YELLOW "Company %d\t is delivering a vaccine batch to Vaccination Zone %d which has success prob:%Lf\n" ANSI_RESET,
-                           curr_check_id, id, comp_ptr[id]->prob_of_success);
+                    printf(ANSI_YELLOW"Company %d\t is delivering a vaccine batch to Vaccination Zone %d which has success prob:%Lf\n"ANSI_RESET,curr_check_id, id, comp_ptr[curr_check_id]->prob_of_success);
 
                     hosp_ptr[id]->tot_vaccines = comp_ptr[curr_check_id]->capacity_of_batches;
                     hosp_ptr[id]->left_vaccines = hosp_ptr[id]->tot_vaccines;
@@ -115,7 +114,7 @@ void invite_students(int id)
                     stu_ptr[curr_stu_id]->vaccine_comp_id = hosp_ptr[id]->partner_company;
                 }
 
-                pthread_mutex_unlock(&(comp_ptr[curr_stu_id]->mutex));
+                pthread_mutex_unlock(&(stu_ptr[curr_stu_id]->mutex));
             }
             curr_stu_id = (curr_stu_id + 1) % num_students;
         }
@@ -137,16 +136,19 @@ void invite_students(int id)
 
 void vaccinate_students(int id, int filled_slots)
 {
-    int i;
-
+    int comp_partner_id = hosp_ptr[id]->partner_company;
     for (int i = 0; i < filled_slots; i++)
     {
         printf(ANSI_GREEN "Student %d on Vaccination Zone %d has been vaccinated which has success probability %Lf\n" ANSI_RESET, hosp_ptr[id]->curr_served_students[i],
-               id, comp_ptr[hosp_ptr[id]->partner_company]->prob_of_success);
+               id, comp_ptr[comp_partner_id]->prob_of_success);
         fflush(stdout);
 
         stu_ptr[hosp_ptr[id]->curr_served_students[i]]->curr_stat = 2;
     }
+    pthread_mutex_lock(&(comp_ptr[comp_partner_id]->mutex));
+    comp_ptr[comp_partner_id]->done_batches++;
+    pthread_cond_signal(&(comp_ptr[comp_partner_id]->cv));
+    pthread_mutex_unlock(&(comp_ptr[comp_partner_id]->mutex));
 }
 
 void *init_hospitals(void *ptr)
