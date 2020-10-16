@@ -35,7 +35,7 @@ void buy_batch_from_company(int id)
             curr_check_id = 0;
             while (!found_supplier)
             {
-
+                printf("trying to find supplier\n");
                 //try locking, but if not available, then rather than waiting, move on
                 pthread_mutex_lock(&(comp_ptr[curr_check_id]->mutex));
                 // if company has an unsold batch left
@@ -52,8 +52,16 @@ void buy_batch_from_company(int id)
                 }
 
                 pthread_mutex_unlock(&(comp_ptr[curr_check_id]->mutex));
+                curr_check_id = (curr_check_id + 1) % num_companies;
+                if (tot_conclusions_left <= 0)
+                {
+                    break;
+                }
             }
-            curr_check_id = (curr_check_id + 1) % num_companies;
+            if (tot_conclusions_left <= 0)
+            {
+                break;
+            }
 
             //A batch has been bought from a company, now time to vaccinate
 
@@ -66,14 +74,16 @@ void invite_students(int id)
 {
 
     //on entering this function, hospital obviously has some number of new vaccines
-    while (hosp_ptr[id]->left_vaccines > 0)
+    while (hosp_ptr[id]->left_vaccines > 0 && tot_conclusions_left > 0)
     {
+        // debug(tot_conclusions_left);
         int up_lim = (int)get_min(get_min(8, hosp_ptr[id]->left_vaccines), hopeful_students_num);
         if (up_lim <= 0)
         {
             up_lim = 2;
         }
-        int curr_slots = get_random_int(1, up_lim);
+        // int curr_slots = get_random_int(1, up_lim);
+        int curr_slots = get_random_int2(1, up_lim, "in invite students");
         int filled_slots = 0;
         int curr_stu_id = 0;
         for (int j = 0; j < 10; j++)
@@ -135,7 +145,7 @@ void vaccinate_students(int id, int filled_slots)
                id, comp_ptr[hosp_ptr[id]->partner_company]->prob_of_success);
         fflush(stdout);
 
-        hosp_ptr[id]->curr_served_students[i] = 2;
+        stu_ptr[hosp_ptr[id]->curr_served_students[i]]->curr_stat = 2;
     }
 }
 

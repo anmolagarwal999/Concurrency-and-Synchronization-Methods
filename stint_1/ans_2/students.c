@@ -89,7 +89,7 @@ void *init_student(void *ptr)
 
     if (late_time != 0)
     {
-        sleep(late_time);
+       // sleep(late_time);
     }
    // printf(ANSI_GREEN"Student %d\t HAS entered the simulation\n"ANSI_RESET,id);
     pthread_mutex_init(&(stu_ptr[id]->mutex), NULL);

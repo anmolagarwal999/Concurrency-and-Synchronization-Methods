@@ -26,11 +26,13 @@ void prep_stock(int id)
             break;
         }
 
-        int prep_time = get_random_int(2, 5);
-        comp_ptr[id]->capacity_of_batches = get_random_int(10, 20);
+        // int prep_time = get_random_int(2, 5);
+        int prep_time = get_random_int2(2, 5,"in prep stock");
+        // comp_ptr[id]->capacity_of_batches = get_random_int(10, 20);
+        comp_ptr[id]->capacity_of_batches = get_random_int2(2, 5,"in prep stock-> 2");
         comp_ptr[id]->done_batches = 0;
-        int num_batches = get_random_int(1, 5);
-
+        // int num_batches = get_random_int(1, 5);
+        int num_batches = get_random_int2(2, 5,"in prep stock-> 3");
         printf(ANSI_YELLOW "Company %d\t is preparing %d batches of vaccines which have success probability %Lf\n" ANSI_RESET, comp_ptr[id]->id, num_batches, comp_ptr[id]->prob_of_success);
 
         sleep(prep_time);
