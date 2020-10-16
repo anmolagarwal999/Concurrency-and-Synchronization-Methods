@@ -3,7 +3,7 @@
 int num_hospitals;
 int num_companies;
 int num_students;
-int latest_arrival_permitted = 3;
+int latest_arrival_permitted = 8;
 int tot_conclusions_left;
 int hopeful_students_num;
 pthread_mutex_t conclusions_mutex;

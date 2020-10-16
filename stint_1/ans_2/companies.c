@@ -57,7 +57,7 @@ void dispatch_stock(int id)
     int flag = 0;
     while (comp_ptr[id]->done_batches < comp_ptr[id]->curr_batches_num)
     {
-        printf(ANSI_MAGENTA"Company with id %d is SLEEP\n"ANSI_RESET,id);
+        printf(ANSI_MAGENTA"Company with id %d is SLEEP \n"ANSI_RESET,id);
         pthread_cond_wait(&(comp_ptr[id]->cv), &(comp_ptr[id]->mutex));
         printf("I HAVE COME OUT OF CONDITIONAL WAIT\n");
         fflush(stdout);

@@ -37,20 +37,29 @@ void buy_batch_from_company(int id)
             {
                 // printf("trying to find supplier\n");
                 //try locking, but if not available, then rather than waiting, move on
-                pthread_mutex_lock(&(comp_ptr[curr_check_id]->mutex));
+                // pthread_mutex_lock(&(comp_ptr[curr_check_id]->mutex));
                 // if company has an unsold batch left
-                if (comp_ptr[curr_check_id]->left_batches_num > 0)
+                //try locking, but if not available, then rather than waiting, move on
+                if (pthread_mutex_trylock(&(comp_ptr[curr_check_id]->mutex)) == EBUSY)
                 {
-                    printf(ANSI_YELLOW"Company %d\t is delivering a vaccine batch to Vaccination Zone %d which has success prob:%Lf\n"ANSI_RESET,curr_check_id, id, comp_ptr[curr_check_id]->prob_of_success);
-
-                    hosp_ptr[id]->tot_vaccines = comp_ptr[curr_check_id]->capacity_of_batches;
-                    hosp_ptr[id]->left_vaccines = hosp_ptr[id]->tot_vaccines;
-                    hosp_ptr[id]->partner_company = curr_check_id;
-                    comp_ptr[curr_check_id]->left_batches_num--;
-                    found_supplier = true;
+                    //EBUSY  The mutex could not be acquired because it was already locked.
+                    printf("Company with id %d is busy deciding transit changes, hence did not answer call\n",curr_check_id);
                 }
+                else
+                {
+                    if (comp_ptr[curr_check_id]->left_batches_num > 0)
+                    {
+                        printf(ANSI_YELLOW "Company %d\t is delivering a vaccine batch to Vaccination Zone %d which has success prob:%Lf\n" ANSI_RESET, curr_check_id, id, comp_ptr[curr_check_id]->prob_of_success);
 
-                pthread_mutex_unlock(&(comp_ptr[curr_check_id]->mutex));
+                        hosp_ptr[id]->tot_vaccines = comp_ptr[curr_check_id]->capacity_of_batches;
+                        hosp_ptr[id]->left_vaccines = hosp_ptr[id]->tot_vaccines;
+                        hosp_ptr[id]->partner_company = curr_check_id;
+                        comp_ptr[curr_check_id]->left_batches_num--;
+                        found_supplier = true;
+                    }
+
+                    pthread_mutex_unlock(&(comp_ptr[curr_check_id]->mutex));
+                }
                 curr_check_id = (curr_check_id + 1) % num_companies;
                 if (tot_conclusions_left <= 0)
                 {

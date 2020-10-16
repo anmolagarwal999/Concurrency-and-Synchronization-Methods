@@ -37,7 +37,7 @@ void seek_hospital(int id)
         //keep on trying unless 3 failures or a success
         printf(ANSI_GREEN"Student id %d\t has arrived for round %d of vaccination\n" ANSI_RESET, id, stu_ptr[id]->rounds_already + 1);
         stu_ptr[id]->curr_stat = 0; //student has started waiting
-        printf(ANSI_GREEN"Student id %d\t is waiting to be allocated a slot on a Vaccination Zone\n" ANSI_RESET, id);
+        printf(ANSI_GREEN"Student id %d\t is waiting to be allocated a slot in a Vaccination Zone\n" ANSI_RESET, id);
 
         pthread_mutex_lock(&hopeful_mutex);
         hopeful_students_num++;
@@ -52,8 +52,8 @@ void seek_hospital(int id)
         antibody_developed = get_random_answer(prob_success);
         if (antibody_developed)
         {
-            printf(ANSI_GREEN"Student has tested positive for antibodies\n"ANSI_RESET);
-            printf(ANSI_BLUE"Student can now attend college\n"ANSI_RESET);
+            printf(ANSI_CYAN"Student %d has tested positive for antibodies\n"ANSI_RESET,id);
+            printf(ANSI_BLUE"Student %d can now attend college\n"ANSI_RESET,id);
             pthread_mutex_lock(&conclusions_mutex);
             tot_conclusions_left--;
             pthread_mutex_unlock(&conclusions_mutex);
@@ -61,7 +61,7 @@ void seek_hospital(int id)
         }
         else
         {
-            printf(ANSI_GREEN"Student has tested negative for antibodies in his %d th attempt\n"ANSI_RESET, stu_ptr[id]->rounds_already);
+            printf(ANSI_CYAN"Student %d has tested negative for antibodies in his %d th attempt\n"ANSI_RESET,id, stu_ptr[id]->rounds_already);
         }
 
         if (stu_ptr[id]->rounds_already == 3)
