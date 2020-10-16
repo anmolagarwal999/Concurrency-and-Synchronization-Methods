@@ -37,31 +37,23 @@ void buy_batch_from_company(int id)
             {
 
                 //try locking, but if not available, then rather than waiting, move on
-                if (pthread_mutex_trylock(&(comp_ptr[curr_check_id]->mutex)) == EBUSY)
+                pthread_mutex_lock(&(comp_ptr[curr_check_id]->mutex));
+                // if company has an unsold batch left
+                if (comp_ptr[curr_check_id]->left_batches_num > 0)
                 {
-                    //EBUSY  The mutex could not be acquired because it was already locked.
-                   // printf("Company with id  %d is busy deciding transit changes, hence did not answer call\n",curr_check_id);
-                }
-                else
-                {
-                    // if company has an unsold batch left
-                    if (comp_ptr[curr_check_id]->left_batches_num > 0)
-                    {
-                        printf(ANSI_YELLOW"Company %d\t is delivering a vaccine batch to\\ 
-                        Vaccination Zone %d which has successprobability %Lf"ANSI_RESET,
-                               curr_check_id, id, comp_ptr[id]->prob_of_success);
+                    printf(ANSI_YELLOW "Company %d\t is delivering a vaccine batch to Vaccination Zone %d which has success prob:%Lf\n" ANSI_RESET,
+                           curr_check_id, id, comp_ptr[id]->prob_of_success);
 
-                        hosp_ptr[id]->tot_vaccines = comp_ptr[curr_check_id]->capacity_of_batches;
-                        hosp_ptr[id]->left_vaccines = hosp_ptr[id]->tot_vaccines;
-                        hosp_ptr[id]->partner_company = curr_check_id;
-                        comp_ptr[curr_check_id]->left_batches_num--;
-                        found_supplier = true;
-                    }
-
-                    pthread_mutex_unlock(&(comp_ptr[curr_check_id]->mutex));
+                    hosp_ptr[id]->tot_vaccines = comp_ptr[curr_check_id]->capacity_of_batches;
+                    hosp_ptr[id]->left_vaccines = hosp_ptr[id]->tot_vaccines;
+                    hosp_ptr[id]->partner_company = curr_check_id;
+                    comp_ptr[curr_check_id]->left_batches_num--;
+                    found_supplier = true;
                 }
-                curr_check_id = (curr_check_id + 1) % num_companies;
+
+                pthread_mutex_unlock(&(comp_ptr[curr_check_id]->mutex));
             }
+            curr_check_id = (curr_check_id + 1) % num_companies;
 
             //A batch has been bought from a company, now time to vaccinate
 
@@ -76,7 +68,12 @@ void invite_students(int id)
     //on entering this function, hospital obviously has some number of new vaccines
     while (hosp_ptr[id]->left_vaccines > 0)
     {
-        int curr_slots = get_random_int(1, (int)get_min(get_min(8, hosp_ptr[id]->left_vaccines), hopeful_students_num));
+        int up_lim = (int)get_min(get_min(8, hosp_ptr[id]->left_vaccines), hopeful_students_num);
+        if (up_lim <= 0)
+        {
+            up_lim = 2;
+        }
+        int curr_slots = get_random_int(1, up_lim);
         int filled_slots = 0;
         int curr_stu_id = 0;
         for (int j = 0; j < 10; j++)
@@ -98,7 +95,8 @@ void invite_students(int id)
                 if (stu_ptr[curr_stu_id]->curr_stat == 0)
                 {
                     stu_ptr[curr_stu_id]->curr_stat = 1; //ongoing
-                    printf("Student X assigned a slot on the Vaccination Zone Y and waiting to be vaccinated");
+                    printf(ANSI_GREEN "Student %d   assigned a slot on the Vaccination Zone %d and waiting to be vaccinated\ns" ANSI_RESET, curr_stu_id, id);
+                    fflush(stdout);
                     pthread_mutex_lock(&hopeful_mutex);
                     hopeful_students_num--;
                     pthread_mutex_unlock(&hopeful_mutex);
@@ -133,7 +131,10 @@ void vaccinate_students(int id, int filled_slots)
 
     for (int i = 0; i < filled_slots; i++)
     {
-        printf("Student X on Vaccination Zone Y has been vaccinated which has success probability Xj");
+        printf(ANSI_GREEN "Student %d on Vaccination Zone %d has been vaccinated which has success probability %Lf\n" ANSI_RESET, hosp_ptr[id]->curr_served_students[i],
+               id, comp_ptr[hosp_ptr[id]->partner_company]->prob_of_success);
+        fflush(stdout);
+
         hosp_ptr[id]->curr_served_students[i] = 2;
     }
 }
@@ -147,7 +148,8 @@ void *init_hospitals(void *ptr)
     hosp_ptr[id]->partner_company = -1;
     hosp_ptr[id]->tot_vaccines = 0;
     pthread_mutex_init(&(hosp_ptr[id]->mutex), NULL);
-    //printf(ANSI_RED"Vaccination Centre %d\t HAS entered the simulation\n"ANSI_RESET,id);
+    printf(ANSI_RED "Vaccination Centre %d\t HAS entered the simulation\n" ANSI_RESET, id);
+    fflush(stdout);
 
     for (int j = 0; j < 10; j++)
     {

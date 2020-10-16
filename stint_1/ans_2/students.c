@@ -55,7 +55,7 @@ void seek_hospital(int id)
             printf(ANSI_GREEN"Student has tested positive for antibodies\n"ANSI_RESET);
             printf(ANSI_GREEN"Student can now attend college\n"ANSI_RESET);
             pthread_mutex_lock(&conclusions_mutex);
-            tot_conclusions_left++;
+            tot_conclusions_left--;
             pthread_mutex_unlock(&conclusions_mutex);
             return;
         }
@@ -70,7 +70,7 @@ void seek_hospital(int id)
         }
     }
     pthread_mutex_lock(&conclusions_mutex);
-    tot_conclusions_left++;
+    tot_conclusions_left--;
     pthread_mutex_unlock(&conclusions_mutex);
     printf(ANSI_GREEN"Student is unable to develop anibodies even after 3 attempts,he has to return home\n"ANSI_RESET);
     return;
