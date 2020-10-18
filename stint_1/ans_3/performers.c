@@ -18,22 +18,29 @@ void seek_stage(int id)
     //signal respective semaphores
     if (perf_type == perf_a)
     {
+        printf("PERFORMER TYPE IS ACQ\n");
         sem_post(&sem_a);
         sem_post(&sem_a_ae_s);
     }
     else if (perf_type == perf_e)
     {
+        printf("PERFORMER TYPE IS ELECTRIC\n");
+
         sem_post(&sem_e);
         sem_post(&sem_a_ae_s);
     }
     else if (perf_type == perf_ae)
     {
+        printf("PERFORMER TYPE IS AE BOTH\n");
+
         sem_post(&sem_ae);
         sem_post(&sem_a_ae_s);
         sem_post(&sem_e_ae_s);
     }
     else if (perf_type == perf_s)
     {
+        printf("PERFORMER TYPE IS SINGER\n");
+
         sem_post(&sem_s);
         sem_post(&sem_a_ae_s);
         sem_post(&sem_e_ae_s);
@@ -62,22 +69,27 @@ void seek_stage(int id)
         if (stage_got == -1)
         {
             //didn't get a stage
+            printf(ANSI_GREEN"Performer %d could not get a stage\n"ANSI_RESET, id);
             perf_ptr[id]->curr_stat = Left_show;
             pthread_mutex_unlock(&ptr->mutex);
         }
         else
         {
             //got a stage
-            pthread_mutex_unlock(&ptr->mutex);
             goto got_stage;
         }
     }
     else
     {
     got_stage:
+        pthread_mutex_unlock(&ptr->mutex);
+
         //surely got a stage, wait for performance to get over
+        printf(ANSI_GREEN"Performer %d GOT STAGE\n"ANSI_RESET, id);
+
         pthread_cond_wait(&(ptr->cv), &(ptr->mutex2));
-        collect_tshirt();
+        printf(ANSI_GREEN"Performer %d needs a t-shirt\n"ANSI_RESET,id);
+        //collect_tshirt();
         pthread_mutex_unlock(&ptr->mutex2);
     }
 

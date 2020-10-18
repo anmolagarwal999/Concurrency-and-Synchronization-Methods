@@ -8,7 +8,7 @@ int tot_num_stages;
 int num_coordinators;
 
 sem_t sem_a, sem_e, sem_ae, sem_s;
-sem_t sem_a_ae_s, sem_e_ae_s,rogue_sem;
+sem_t sem_a_ae_s, sem_e_ae_s, rogue_sem;
 
 int get_performer_type(char ch)
 {
@@ -79,11 +79,38 @@ void take_input()
 
 int main()
 {
-    int i, j, cnt_sp, ans, len;
+    int i, j;
     //srand(time(0));
     take_input();
     // char inp_helper[100];
 
+       ////////////////////////////////////////////////////////////////////////////
+    tot_num_stages=num_stage_a+num_stage_e;
+    for (i = 0; i < tot_num_stages; i++)
+    {
+        printf("Taking stage stuff\n");
+        debug(i);
+        fflush(stdout);
+        st_ptr[i] = (struct stage *)malloc(sizeof(struct stage));
+
+        st_ptr[i]->stage_id = i;
+        st_ptr[i]->perf_id1 = -1;
+        st_ptr[i]->perf_id2 = -1;
+        if (i < num_stage_a)
+        {
+            st_ptr[i]->type = stage_type_a;
+        }
+        else
+        {
+            st_ptr[i]->type = stage_type_e;
+        }
+
+        st_ptr[i]->curr_stat = 0;
+        st_ptr[i]->thr_id = pthread_create(&(st_ptr[i]->thread_obj), NULL, stage_entry, (void *)(&(st_ptr[i]->stage_id)));
+    }
+    //return 0;
+    part2;
+    part2;
     printf("Enter details of performers\n");
     for (i = 0; i < tot_num_performers; i++)
     {
@@ -91,22 +118,24 @@ int main()
 
         printf("Enter details in just one line in format <one-word-name> <instrument> <Arrival time>\n");
 
-        printf("Enter name: ");
+        //  printf("Enter name: ");
         scanf("%s", perf_ptr[i]->name);
 
         //newline stored, so take again
         scanf("%c", &perf_ptr[i]->instrument_id);
-        printf("Enter instrument code: ");
+        // printf("Enter instrument code: ");
         scanf("%c", &perf_ptr[i]->instrument_id);
 
-        printf("Enter arrival time: ");
+        //  printf("Enter arrival time: ");
         scanf(" %d", &perf_ptr[i]->arrival_time);
-
+        printf("Name is %s\n", perf_ptr[i]->name);
+        printf("Instrument id is %c\n", perf_ptr[i]->instrument_id);
+        printf("Arrival is %d\n", perf_ptr[i]->arrival_time);
         perf_ptr[i]->stage_allotted = -1;
         perf_ptr[i]->type = get_performer_type(perf_ptr[i]->instrument_id);
         perf_ptr[i]->curr_stat = Unarrived;
         perf_ptr[i]->id = i;
-        printf("name is %s", perf_ptr[i]->name);
+        //printf("name is %s", perf_ptr[i]->name);
 
         pthread_mutex_init(&(perf_ptr[i]->mutex), NULL);
         pthread_mutex_init(&(perf_ptr[i]->mutex2), NULL);
@@ -131,35 +160,16 @@ int main()
         }
 
         // perf_ptr[i]->thr_id = pthread_create(&(perf_ptr[i]->thread_obj), NULL, performer_entry, (void *)(&(perf_ptr[i]->id)));
-        part2;
+        part;
     }
 
     for (i = 0; i < tot_num_performers; i++)
     {
 
-        perf_ptr[i]->thr_id = pthread_create(&(perf_ptr[i]->thread_obj), NULL, stage_entry, (void *)(&(perf_ptr[i]->id)));
+        perf_ptr[i]->thr_id = pthread_create(&(perf_ptr[i]->thread_obj), NULL, performer_entry, (void *)(&(perf_ptr[i]->id)));
         part2;
     }
-    ////////////////////////////////////////////////////////////////////////////
-
-    for (i = 0; i < tot_num_stages; i++)
-    {
-
-        st_ptr[i]->stage_id = i;
-        st_ptr[i]->perf_id1 = -1;
-        st_ptr[i]->perf_id2 = -1;
-        if (i < num_stage_a)
-        {
-            st_ptr[i]->type = stage_type_a;
-        }
-        else
-        {
-            st_ptr[i]->type = stage_type_e;
-        }
-
-        st_ptr[i]->curr_stat=0;
-        st_ptr[i]->thr_id = pthread_create(&(st_ptr[i]->thread_obj), NULL, performer_entry, (void *)(&(st_ptr[i]->stage_id)));
-    }
+ 
 
     ////////////////////////////////////////////////////////////////////////////
 
