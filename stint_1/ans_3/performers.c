@@ -4,7 +4,7 @@
 struct timespec *get_abs_time_obj(int sec_can_wait)
 {
     //https://www.gnu.org/software/libc/manual/html_node/Time-Types.html
-    struct timespec *ptr = (struct timespec *)malloc(sizeof(struct timespec *));
+    struct timespec *ptr = (struct timespec *)malloc(sizeof(struct timespec));
     // https://stackoverflow.com/q/46018295/
     /* If the thread is preempted between the first statement and the last statement, the thread blocks for too long. Blocking, however, is irrelevant if an absolute timeout is used. 
     An absolute timeout also need not be recomputed if 
@@ -51,18 +51,20 @@ void seek_stage(int id)
     }
     else
     {
-        printf(ANSI_RED"Weird stuff in Copenganhagen"ANSI_RESET);
+        printf(ANSI_RED "Weird stuff in Copenganhagen\n" ANSI_RESET);
         exit(0);
     }
-    
 
     ///////////////////////////////////////////////////
     //Set waiting time limit
-    struct timespec *st=get_abs_time_obj(patience_time);
-
-    pthread_cond_wait(&(ptr->cv), &(ptr->mutex));
-
-
+    struct timespec *st = get_abs_time_obj(patience_time);
+    //https://man7.org/linux/man-pages/man3/pthread_cond_timedwait.3p.html
+    int ret_val = pthread_cond_timedwait(&(ptr->cv), &(ptr->mutex),st);
+    printf("ret value is %d\n",ret_val);
+    if(ret_val==ETIMEDOUT)
+    {
+        printf(ANSI_YELLOW"TIMER EXPIRED for id %d\n"ANSI_RESET,id);
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////
     //set performance time and hope for the best
@@ -76,7 +78,9 @@ void *performer_entry(void *ptr)
     int id = *((int *)ptr);
 
     //wait for arrival time and then start
-    printf(ANSI_BLUE"Proposed arrival time is %d\n"ANSI_RESET,perf_ptr[id]->arrival_time);
+    debug(id);
+    printf(ANSI_BLUE "Proposed arrival time is %d\n" ANSI_RESET, perf_ptr[id]->arrival_time);
     sleep(perf_ptr[id]->arrival_time);
+    seek_stage(id);
     return NULL;
 }

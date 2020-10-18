@@ -78,10 +78,10 @@ void take_input()
 
 int main()
 {
-    int i, j,cnt_sp,ans,len;
+    int i, j, cnt_sp, ans, len;
     //srand(time(0));
     take_input();
-    char inp_helper[100];
+    // char inp_helper[100];
 
     printf("Enter details of performers\n");
     for (i = 0; i < tot_num_performers; i++)
@@ -89,42 +89,23 @@ int main()
         perf_ptr[i] = (struct performer *)malloc(sizeof(struct performer));
 
         printf("Enter details in just one line in format <one-word-name> <instrument> <Arrival time>\n");
-        // scanf("%s", inp_helper);
-        // len = strlen(inp_helper);
-        // printf("inputted string is %s",inp_helper);
 
-        cnt_sp = 0;
-        ans = 0;
+        printf("Enter name: ");
+        scanf("%s", perf_ptr[i]->name);
 
-        // for (j = 0; j < len; j++)
-        // {
-        //     if (inp_helper[j] == ' ')
-        //     {
-        //         cnt_sp++;
-        //         continue;
-        //     }
-        //     if (cnt_sp == 0)
-        //     {
-        //         perf_ptr[i]->name[j] = inp_helper[j];
-        //         perf_ptr[i]->name[j + 1] = '\0';
-        //     }
-        //     else if (cnt_sp == 1)
-        //     {
-        //         perf_ptr[i]->instrument_id = inp_helper[j];
-        //     }
-        //     else
-        //     {
-        //         ans*=10;
-        //         ans+=(inp_helper[j]-'0');
-        //     }
-        // }
-        // perf_ptr[i]->arrival_time=ans;
-        // debug(ans);
+        //newline stored, so take again
+        scanf("%c", &perf_ptr[i]->instrument_id);
+        printf("Enter instrument code: ");
+        scanf("%c", &perf_ptr[i]->instrument_id);
 
+        printf("Enter arrival time: ");
+        scanf(" %d", &perf_ptr[i]->arrival_time);
 
         perf_ptr[i]->stage_allotted = -1;
         perf_ptr[i]->type = get_performer_type(perf_ptr[i]->instrument_id);
         perf_ptr[i]->curr_stat = Unarrived;
+        perf_ptr[i]->id = i;
+        printf("name is %s", perf_ptr[i]->name);
 
         pthread_mutex_init(&(perf_ptr[i]->mutex), NULL);
         pthread_cond_init(&(perf_ptr[i]->cv), NULL);
@@ -146,6 +127,13 @@ int main()
         {
             singer_ptr[nump_s++] = perf_ptr[i];
         }
+
+       // perf_ptr[i]->thr_id = pthread_create(&(perf_ptr[i]->thread_obj), NULL, performer_entry, (void *)(&(perf_ptr[i]->id)));
+        part2;
+    }
+
+    for (i = 0; i < tot_num_performers; i++)
+    {
 
         perf_ptr[i]->thr_id = pthread_create(&(perf_ptr[i]->thread_obj), NULL, performer_entry, (void *)(&(perf_ptr[i]->id)));
         part2;
