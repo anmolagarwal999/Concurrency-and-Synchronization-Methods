@@ -12,34 +12,48 @@
 #define ANSI_CYAN "\x1b[36m"
 #define ANSI_RESET "\x1b[0m"
 
-#define ptype_a 1
-#define ptype_e 2
-#define ptype_ae 3
-#define ptype_s 4
+
+enum performer_types{
+    perf_a,perf_e,perf_ae,perf_s
+};
+
 
 #define stage_a 1
 #define stage_e 2
 
-extern int num_performers;
-extern int num_a, num_e, num_ae, num_s;
+extern int tot_num_performers;
+extern int nump_a, nump_e, nump_ae, nump_s;
 extern int t1, t2, patience_time;
-extern int num_e_stages;
-extern int num_a_stages;
-extern int tot_stages;
+extern int st_num_a, st_num_e;
+extern int tot_num_stages;
+extern int num_coordinators;
 
 extern sem_t sem_a, sem_e, sem_ae, sem_s;
+extern sem_t sem_a_ae_s,sem_e_ae_s;
+
+enum performer_statuses{ Unarrived,
+                    Waiting,
+                    Performing_solo,
+                    Peforming_duel,
+                    Wait_for_shirt,
+                    Collecting_shirt,
+                    Left_show };
 
 struct performer
 {
-    char perf_name[50];
+    char name[100];
     int id;
-    int perf_type;
+    enum performer_types type;
     int arrival_time;
     char instrument_id;
-    int stage_of_perf;
+    int stage_allotted;
     int perf_time;
     pthread_mutex_t mutex;
     pthread_cond_t cv;
+    pthread_t thread_obj;
+    int thr_id;
+    enum performer_statuses curr_stat;
+    
 };
 
 struct stage
@@ -49,6 +63,18 @@ struct stage
     int perf_id2;
     int stage_type;
     int curr_stat;
+    pthread_t thread_obj;
+    int thr_id;
 };
+
+#define max_inp_to_entities 500
+
+struct performer *perf_ptr[max_inp_to_entities];
+struct stage *stage_ptr[max_inp_to_entities];
+
+struct performer *musc_a_ptr[max_inp_to_entities];
+struct performer *musc_e_ptr[max_inp_to_entities];
+struct performer *musc_ae_ptr[max_inp_to_entities];
+struct performer *singer_ptr[max_inp_to_entities];
 
 #endif
