@@ -18,13 +18,13 @@ enum performer_types{
 };
 
 
-#define stage_a 1
-#define stage_e 2
+#define stage_type_a 1
+#define stage_type_e 2
 
 extern int tot_num_performers;
 extern int nump_a, nump_e, nump_ae, nump_s;
 extern int t1, t2, patience_time;
-extern int st_num_a, st_num_e;
+extern int num_stage_a,num_stage_e;
 extern int tot_num_stages;
 extern int num_coordinators;
 
@@ -61,7 +61,7 @@ struct stage
     int stage_id;
     int perf_id1;
     int perf_id2;
-    int stage_type;
+    int type;
     int curr_stat;
     pthread_t thread_obj;
     int thr_id;
@@ -70,7 +70,7 @@ struct stage
 #define max_inp_to_entities 500
 
 struct performer *perf_ptr[max_inp_to_entities];
-struct stage *stage_ptr[max_inp_to_entities];
+struct stage *st_ptr[max_inp_to_entities];
 
 struct performer *musc_a_ptr[max_inp_to_entities];
 struct performer *musc_e_ptr[max_inp_to_entities];

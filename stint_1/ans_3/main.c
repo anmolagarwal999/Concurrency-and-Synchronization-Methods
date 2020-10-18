@@ -3,7 +3,7 @@
 int tot_num_performers;
 int nump_a = 0, nump_e = 0, nump_ae = 0, nump_s = 0;
 int t1, t2, patience_time;
-int st_num_a, st_num_e;
+int num_stage_a, num_stage_e;
 int tot_num_stages;
 int num_coordinators;
 
@@ -48,11 +48,11 @@ void take_input()
     printf(ANSI_RED "REACHED HERE" ANSI_RESET);
 
     printf("Enter number of acoustic stages: ");
-    scanf("%d", &st_num_a);
+    scanf("%d", &num_stage_a);
     fflush(stdout);
 
     printf("Enter number of electric stages: ");
-    scanf("%d", &st_num_e);
+    scanf("%d", &num_stage_e);
     fflush(stdout);
 
     printf("Enter min_performance_time: ");
@@ -128,21 +128,48 @@ int main()
             singer_ptr[nump_s++] = perf_ptr[i];
         }
 
-       // perf_ptr[i]->thr_id = pthread_create(&(perf_ptr[i]->thread_obj), NULL, performer_entry, (void *)(&(perf_ptr[i]->id)));
+        // perf_ptr[i]->thr_id = pthread_create(&(perf_ptr[i]->thread_obj), NULL, performer_entry, (void *)(&(perf_ptr[i]->id)));
         part2;
     }
 
     for (i = 0; i < tot_num_performers; i++)
     {
 
-        perf_ptr[i]->thr_id = pthread_create(&(perf_ptr[i]->thread_obj), NULL, performer_entry, (void *)(&(perf_ptr[i]->id)));
+        perf_ptr[i]->thr_id = pthread_create(&(perf_ptr[i]->thread_obj), NULL, stage_entry, (void *)(&(perf_ptr[i]->id)));
         part2;
     }
+    ////////////////////////////////////////////////////////////////////////////
+
+    for (i = 0; i < tot_num_stages; i++)
+    {
+
+        st_ptr[i]->stage_id = i;
+        st_ptr[i]->perf_id1 = -1;
+        st_ptr[i]->perf_id2 = -1;
+        if (i < num_stage_a)
+        {
+            st_ptr[i]->type = stage_type_a;
+        }
+        else
+        {
+            st_ptr[i]->type = stage_type_e;
+        }
+
+        st_ptr[i]->curr_stat=0;
+        st_ptr[i]->thr_id = pthread_create(&(st_ptr[i]->thread_obj), NULL, performer_entry, (void *)(&(st_ptr[i]->stage_id)));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
 
     for (int i = 0; i < tot_num_performers; i++)
     {
 
         pthread_join(perf_ptr[i]->thread_obj, NULL);
+    }
+    for (int i = 0; i < tot_num_stages; i++)
+    {
+
+        pthread_join(st_ptr[i]->thread_obj, NULL);
     }
     printf(ANSI_MAGENTA "----Finished----\nSimulation Over\n" ANSI_RESET);
     fflush(stdout);
