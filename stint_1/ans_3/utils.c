@@ -1,5 +1,18 @@
 #include "master_header.h"
 
+struct timespec *get_abs_time_obj(int sec_can_wait)
+{
+    //https://www.gnu.org/software/libc/manual/html_node/Time-Types.html
+    struct timespec *ptr = (struct timespec *)malloc(sizeof(struct timespec));
+    // https://stackoverflow.com/q/46018295/
+    /* If the thread is preempted between the first statement and the last statement, the thread blocks for too long. Blocking, however, is irrelevant if an absolute timeout is used. 
+    An absolute timeout also need not be recomputed if 
+    it is used multiple times in a loop, such as that enclosing a condition wait.*/
+    clock_gettime(CLOCK_REALTIME, ptr);
+    ptr->tv_sec += sec_can_wait;
+    return ptr;
+}
+
 int get_random_int(int lower, int upper)
 {
     // printf("inside ran() stuff\n");

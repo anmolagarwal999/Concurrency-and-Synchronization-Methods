@@ -34,7 +34,7 @@ extern sem_t sem_a_ae_s,sem_e_ae_s;
 enum performer_statuses{ Unarrived,
                     Waiting,
                     Performing_solo,
-                    Peforming_duel,
+                    Performing_duel,
                     Wait_for_shirt,
                     Collecting_shirt,
                     Left_show };
