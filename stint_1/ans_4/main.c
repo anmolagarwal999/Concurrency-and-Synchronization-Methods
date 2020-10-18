@@ -6,8 +6,7 @@ int t1, t2, patience_time;
 int num_stage_a, num_stage_e;
 int tot_num_stages;
 int num_coordinators;
-
-extern sem_t sem_empty_a, sem_empty_e, sem_filled_ae;
+sem_t sem_empty_a, sem_empty_e, sem_filled_ae;
 sem_t sem_coordinators, sem_tshirt_givers;
 
 int get_performer_type(char ch)
@@ -72,6 +71,8 @@ void take_input()
 
     nump_a = 0, nump_e = 0, nump_ae = 0, nump_s = 0;
     //https://www.man7.org/linux/man-pages/man3/sem_init.3.html
+    debug(num_stage_a);
+    debug(num_stage_e);
     sem_init(&sem_empty_a, 0, num_stage_a);
     sem_init(&sem_empty_e, 0, num_stage_e);
     sem_init(&sem_filled_ae, 0, 0);
@@ -122,6 +123,7 @@ int main()
     printf("Enter details of performers\n");
     for (i = 0; i < tot_num_performers; i++)
     {
+        printf("Want to take input for i as follows : %d\n",i);
         perf_ptr[i] = (struct performer *)malloc(sizeof(struct performer));
 
         printf("Enter details in just one line in format <one-word-name> <instrument> <Arrival time>\n");
@@ -143,23 +145,67 @@ int main()
         perf_ptr[i]->type = get_performer_type(perf_ptr[i]->instrument_id);
         perf_ptr[i]->curr_stat = Waiting;
         perf_ptr[i]->id = i;
+        if (perf_ptr[i]->type == perf_a)
+        {
+            nump_a++;
+        }
+        else if (perf_ptr[i]->type == perf_e)
+        {
+            nump_e++;
+        }
+        else if (perf_ptr[i]->type == perf_ae)
+        {
+            nump_ae++;
+        }
+        else if (perf_ptr[i]->type == perf_s)
+        {
+            nump_s++;
+        }
+
         //printf("name is %s", perf_ptr[i]->name);
 
         pthread_mutex_init(&(perf_ptr[i]->mutex), NULL);
         pthread_cond_init(&(perf_ptr[i]->cv), NULL);
-        perf_ptr[i]->perf_time = get_rand_int(t1, t2, "Gotham City");
-        perf_ptr[i]->curr_stat = Unarrived;
-        dispatch_performer(i);
+        perf_ptr[i]->perf_time = get_random_int2(t1, t2, "Gotham City");
+        // dispatch_performers(i);
+        part;
+    }
+
+    for (i = 0; i < tot_num_performers; i++)
+    {
+        dispatch_performers(i);
         part;
     }
 
     ////////////////////////////////////////////////////////////////////////////
-
+    debug(tot_num_performers);
     for (int i = 0; i < tot_num_performers; i++)
     {
-
-        pthread_join(perf_ptr[i]->thread_obj, NULL);
+        printf("Will ask %d to join\n",i);
+        int performer_type = perf_ptr[i]->type;
+        if (performer_type == perf_a)
+        {
+            pthread_join(perf_ptr[i]->thread_obj[0], NULL);
+        }
+        else if (performer_type == perf_e)
+        {
+            pthread_join(perf_ptr[i]->thread_obj[1], NULL);
+        }
+        else if (performer_type == perf_ae)
+        {
+            pthread_join(perf_ptr[i]->thread_obj[0], NULL);
+            pthread_join(perf_ptr[i]->thread_obj[1], NULL);
+        }
+        else if (performer_type == perf_s)
+        {
+            pthread_join(perf_ptr[i]->thread_obj[0], NULL);
+            pthread_join(perf_ptr[i]->thread_obj[1], NULL);
+            pthread_join(perf_ptr[i]->thread_obj[2], NULL);
+        }
+        printf("Joined till id %d\n",i);
+        part2;
     }
     printf(ANSI_MAGENTA "----Finished----\nSimulation Over\n" ANSI_RESET);
     fflush(stdout);
+    return 0;
 }

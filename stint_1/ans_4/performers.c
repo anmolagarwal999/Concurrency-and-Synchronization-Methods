@@ -15,14 +15,13 @@ bool is_musician(int id)
 
 void collect_tshirt(int id)
 {
-    struct performer *ptr = perf_ptr[id];
     sem_wait(&sem_tshirt_givers);
 
     //redundant status change but still doing for consistency
     pthread_mutex_lock(&perf_ptr[id]->mutex);
     perf_ptr[id]->curr_stat = Collecting_shirt;
     pthread_mutex_unlock(&perf_ptr[id]->mutex);
-    printf(ANSI_GREEN "Performer with id %d collecting tshirt\n", id);
+    printf(ANSI_MAGENTA "Performer with name %s collecting tshirt\n"ANSI_RESET, perf_ptr[id]->name);
     sleep(2);
     pthread_mutex_lock(&perf_ptr[id]->mutex);
     perf_ptr[id]->curr_stat = Left_show;
@@ -30,13 +29,15 @@ void collect_tshirt(int id)
     sem_post(&sem_tshirt_givers);
 }
 
-void *performer_empty_a_stage(void *ptr2)
+void *performer_empty_a_stage(void *ptr1)
 {
-    int id = *((int *)ptr2);
+    int id = *((int *)ptr1);
     struct performer *ptr = perf_ptr[id];
     sleep(ptr->arrival_time);
     bool found_stage = false;
+    printf("Entered searching for acqoustic stage\n");
 block1:
+    found_stage = false;
     sem_wait(&sem_empty_a);
     //unnecessary  but still -> preliminary check-> acquire mutex to make sure that status does not change while reading
     pthread_mutex_lock(&ptr->mutex);
@@ -54,7 +55,7 @@ block1:
     }
     pthread_mutex_unlock(&ptr->mutex);
 
-    for (int i = 0; i < num_stage_a; i++)
+    for (int i = 0; i < num_stage_a && found_stage == false; i++)
     {
         pthread_mutex_lock(&st_ptr[i]->mutex);
         // enum stage_statuses
@@ -86,7 +87,7 @@ block1:
                 //Change self status
                 ptr->curr_stat = Performing_solo;
                 ptr->stage_allotted = st_ptr[i]->stage_id;
-
+                found_stage = true;
                 //Book stage for self
                 st_ptr[i]->curr_stat = one_occupant;
                 st_ptr[i]->perf_id1 = ptr->id;
@@ -119,7 +120,10 @@ void *performer_empty_e_stage(void *ptr2)
     struct performer *ptr = perf_ptr[id];
     sleep(ptr->arrival_time);
     bool found_stage = false;
+    printf("Entered searching for elctric stage\n");
+
 block2:
+    found_stage = false;
     sem_wait(&sem_empty_e);
     //unnecessary  but still -> preliminary check-> acquire mutex to make sure that status does not change while reading
     pthread_mutex_lock(&ptr->mutex);
@@ -131,15 +135,20 @@ block2:
         //Neceassry to unlock as other redundant thread may need it
 
         //increment semapore for false alarm
+        printf(ANSI_RED "FALSE ALARM . I AM PRIVILEGED status is %d\n" ANSI_RESET, ptr->curr_stat);
         sem_post(&sem_empty_e);
         pthread_mutex_unlock(&ptr->mutex);
         return NULL;
     }
     pthread_mutex_unlock(&ptr->mutex);
 
-    for (int i = num_stage_a; i < tot_num_stages; i++)
+    for (int i = num_stage_a; i < tot_num_stages && found_stage == false; i++)
     {
+        //debug(i);
+        // printf("investigating stage with id %d\n", i);
         pthread_mutex_lock(&st_ptr[i]->mutex);
+        // printf("Able to get mutex of stage with id %d| Status is %d\n", st_ptr[i]->stage_id, st_ptr[i]->curr_stat);
+        fflush(stdout);
         // enum stage_statuses
         // {
         //     Unoccupied,
@@ -150,6 +159,7 @@ block2:
         if (st_ptr[i]->curr_stat == Unoccupied)
         {
             //if I am still waiting, i will take this stage
+            //printf("Found stage unoccupied\n");
             pthread_mutex_lock(&ptr->mutex);
             if (ptr->curr_stat != Waiting)
             {
@@ -168,6 +178,8 @@ block2:
             {
                 //Change self status
                 ptr->curr_stat = Performing_solo;
+                found_stage = true;
+                ptr->stage_allotted = st_ptr[i]->stage_id;
 
                 //Book stage for self
                 st_ptr[i]->curr_stat = one_occupant;
@@ -189,6 +201,7 @@ block2:
     }
     else
     {
+        printf("I have been able to find a stage\n");
         give_leader_performance(id);
     }
 
@@ -202,6 +215,7 @@ void *performer_filled_ae_stage(void *ptr3)
     sleep(ptr->arrival_time);
     bool found_stage = false;
 block3:
+    found_stage = false;
     sem_wait(&sem_filled_ae);
     //unnecessary  but still -> preliminary check-> acquire mutex to make sure that status does not change while reading
     pthread_mutex_lock(&ptr->mutex);
@@ -219,8 +233,9 @@ block3:
     }
     pthread_mutex_unlock(&ptr->mutex);
 
-    for (int i = 0; i < tot_num_stages; i++)
+    for (int i = 0; i < tot_num_stages && found_stage == false; i++)
     {
+        printf("trying to acquire lock for DUEL FUNC %d\n", i);
         pthread_mutex_lock(&st_ptr[i]->mutex);
         // enum stage_statuses
         // {
@@ -229,7 +244,7 @@ block3:
         //     one_singer,
         //     two_folks
         // };
-        if (st_ptr[i]->curr_stat == Performing_solo && is_musician(st_ptr[i]->perf_id1))
+        if (st_ptr[i]->curr_stat == open_to_duel && is_musician(st_ptr[i]->perf_id1))
         {
             //if I am still waiting, i will take this stage
             pthread_mutex_lock(&ptr->mutex);
@@ -250,12 +265,16 @@ block3:
             {
                 //Change self status
                 ptr->curr_stat = Performing_duel;
+                found_stage = true;
 
                 //Book stage for self
                 st_ptr[i]->curr_stat = two_folks;
                 st_ptr[i]->perf_id2 = ptr->id;
+                ptr->stage_allotted = st_ptr[i]->stage_id;
+
                 int leader_id = st_ptr[i]->perf_id1;
                 perf_ptr[leader_id]->curr_stat = Performing_duel;
+                printf(ANSI_BLUE "Singer %s is starting DUEL on stage id %d with %s\n" ANSI_RESET, ptr->name, st_ptr[i]->stage_id, perf_ptr[leader_id]->name);
             }
 
             pthread_mutex_unlock(&ptr->mutex);
@@ -279,12 +298,18 @@ void give_leader_performance(int id)
 {
     struct performer *ptr = perf_ptr[id];
     int perf_type = ptr->type;
+    int stage_id = ptr->stage_allotted;
     if (perf_type == perf_s)
     {
         //do not invite any singer for duel
+        printf(ANSI_GREEN "Singer %s is starting solo on stage id %d for time %d secs\n" ANSI_RESET, ptr->name, stage_id, ptr->instrument_id, ptr->perf_time);
     }
     else
     {
+        printf(ANSI_RED "Musician %s is starting solo on stage id %d with instrument %c for time %d secs\n" ANSI_RESET, ptr->name, stage_id, ptr->instrument_id, ptr->perf_time);
+        pthread_mutex_lock(&st_ptr[stage_id]->mutex);
+        st_ptr[stage_id]->curr_stat = open_to_duel;
+        pthread_mutex_unlock(&st_ptr[stage_id]->mutex);
         sem_post(&sem_filled_ae);
     }
 
@@ -292,7 +317,6 @@ void give_leader_performance(int id)
     //sleep over
     int leader_id = id;
     int follower_id = -1;
-    int stage_id = ptr->stage_allotted;
     if (st_ptr[stage_id]->curr_stat == Unoccupied)
     {
         printf("Weird stuff -> TOKYO\n");
@@ -324,12 +348,15 @@ void give_leader_performance(int id)
     st_ptr[stage_id]->perf_id1 = -1;
     st_ptr[stage_id]->perf_id2 = -1;
     st_ptr[stage_id]->curr_stat = Unoccupied;
-    if (st_ptr[id]->type == TYPE_A)
+    if (st_ptr[stage_id]->type == TYPE_A)
     {
+        printf("incrementing sempahore of type A\n");
         sem_post(&sem_empty_a);
     }
     else
     {
+        printf("incrementing sempahore of type E\n");
+
         sem_post(&sem_empty_e);
     }
     pthread_mutex_unlock(&st_ptr[stage_id]->mutex);
@@ -345,6 +372,9 @@ void give_leader_performance(int id)
 void dispatch_performers(int id)
 {
     int performer_type = perf_ptr[id]->type;
+    part3;
+    printf("GOING TO CREATE THREADS FOR id %d\n", id);
+    part3;
     if (performer_type == perf_a)
     {
         perf_ptr[id]->thr_id[0] = pthread_create(&(perf_ptr[id]->thread_obj[0]), NULL, performer_empty_a_stage, (void *)(&(perf_ptr[id]->id)));
@@ -362,6 +392,6 @@ void dispatch_performers(int id)
     {
         perf_ptr[id]->thr_id[0] = pthread_create(&(perf_ptr[id]->thread_obj[0]), NULL, performer_empty_a_stage, (void *)(&(perf_ptr[id]->id)));
         perf_ptr[id]->thr_id[1] = pthread_create(&(perf_ptr[id]->thread_obj[1]), NULL, performer_empty_e_stage, (void *)(&(perf_ptr[id]->id)));
-        perf_ptr[id]->thr_id[2] = pthread_create(&(perf_ptr[id]->thread_obj[2]), NULL,performer_filled_ae_stage, (void *)(&(perf_ptr[id]->id)));
+        perf_ptr[id]->thr_id[2] = pthread_create(&(perf_ptr[id]->thread_obj[2]), NULL, performer_filled_ae_stage, (void *)(&(perf_ptr[id]->id)));
     }
 }

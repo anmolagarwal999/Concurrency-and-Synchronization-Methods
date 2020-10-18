@@ -4,13 +4,27 @@
 #include <stdbool.h>
 
 //https://stackoverflow.com/questions/3219393/stdlib-and-colored-output-in-c
-#define ANSI_RED "\033[1;31m"
-#define ANSI_GREEN "\033[1;32m"
-#define ANSI_YELLOW "\x1b[33m"
+
+  //solo by musician
+  #define ANSI_RED "\033[1;31m"    
+
+//solo for singer
+#define ANSI_GREEN "\033[1;32m" 
+
+// for arrival
+#define ANSI_YELLOW "\033[1;33m" 
+
+  //singer joins duel
 #define ANSI_BLUE "\x1b[34m"
-#define ANSI_MAGENTA "\x1b[35m"
-#define ANSI_CYAN "\x1b[36m"
+
+//t-shirt collection
+#define ANSI_MAGENTA "\x1b[35m" 
+
+  //performance ending
+#define ANSI_CYAN "\033[1;36m"
 #define ANSI_RESET "\x1b[0m"
+
+
 
 enum performer_types
 {
@@ -51,6 +65,7 @@ enum performer_statuses
     Unarrived,
     Waiting,
     Performing_solo,
+    open_to_duel,
     Performing_duel,
     Wait_for_shirt,
     Collecting_shirt,

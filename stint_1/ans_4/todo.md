@@ -7,6 +7,16 @@
 * signal to singer only if another performer is not a singer
 * while searching for possible duels, make sure singer is not paired with singer
 * Don't forget to implement timed wait
+* Display message of left due to impatience
 *
-*
-*
+5 1 1 4 2 10 5
+Tanvi p 0
+Sudh b 1
+Manas g 0
+Sriya v 1
+Pahun s 1
+
+
+
+1 1 1 4 2 7 1 
+Abhinav b 3
