@@ -18,7 +18,7 @@ void collect_tshirt(int id)
     struct performer *ptr = perf_ptr[id];
     sem_wait(&sem_tshirt_givers);
 
-    //redundant status change for doing for consistency
+    //redundant status change but still doing for consistency
     pthread_mutex_lock(&perf_ptr[id]->mutex);
     perf_ptr[id]->curr_stat = Collecting_shirt;
     pthread_mutex_unlock(&perf_ptr[id]->mutex);
@@ -30,7 +30,7 @@ void collect_tshirt(int id)
     sem_post(&sem_tshirt_givers);
 }
 
-void *performer_a_stage(void *ptr2)
+void *performer_empty_a_stage(void *ptr2)
 {
     int id = *((int *)ptr2);
     struct performer *ptr = perf_ptr[id];
@@ -113,7 +113,7 @@ block1:
     return NULL;
 }
 
-void *performer_e_stage(void *ptr2)
+void *performer_empty_e_stage(void *ptr2)
 {
     int id = *((int *)ptr2);
     struct performer *ptr = perf_ptr[id];
@@ -195,7 +195,7 @@ block2:
     return NULL;
 }
 
-void *performer_ae_stage(void *ptr3)
+void *performer_filled_ae_stage(void *ptr3)
 {
     int id = *((int *)ptr3);
     struct performer *ptr = perf_ptr[id];
@@ -237,7 +237,7 @@ block3:
             {
                 //I have already gotten another stage
 
-                //increment semapore for false alarm
+                //increment semaphore for false alarm
                 sem_post(&sem_filled_ae);
                 pthread_mutex_unlock(&ptr->mutex);
 
@@ -339,5 +339,29 @@ void give_leader_performance(int id)
     if (follower_id != -1)
     {
         collect_tshirt(follower_id);
+    }
+}
+
+void dispatch_performers(int id)
+{
+    int performer_type = perf_ptr[id]->type;
+    if (performer_type == perf_a)
+    {
+        perf_ptr[id]->thr_id[0] = pthread_create(&(perf_ptr[id]->thread_obj[0]), NULL, performer_empty_a_stage, (void *)(&(perf_ptr[id]->id)));
+    }
+    else if (performer_type == perf_e)
+    {
+        perf_ptr[id]->thr_id[1] = pthread_create(&(perf_ptr[id]->thread_obj[1]), NULL, performer_empty_e_stage, (void *)(&(perf_ptr[id]->id)));
+    }
+    else if (performer_type == perf_ae)
+    {
+        perf_ptr[id]->thr_id[0] = pthread_create(&(perf_ptr[id]->thread_obj[0]), NULL, performer_empty_a_stage, (void *)(&(perf_ptr[id]->id)));
+        perf_ptr[id]->thr_id[1] = pthread_create(&(perf_ptr[id]->thread_obj[1]), NULL, performer_empty_e_stage, (void *)(&(perf_ptr[id]->id)));
+    }
+    else if (performer_type == perf_s)
+    {
+        perf_ptr[id]->thr_id[0] = pthread_create(&(perf_ptr[id]->thread_obj[0]), NULL, performer_empty_a_stage, (void *)(&(perf_ptr[id]->id)));
+        perf_ptr[id]->thr_id[1] = pthread_create(&(perf_ptr[id]->thread_obj[1]), NULL, performer_empty_e_stage, (void *)(&(perf_ptr[id]->id)));
+        perf_ptr[id]->thr_id[2] = pthread_create(&(perf_ptr[id]->thread_obj[2]), NULL,performer_filled_ae_stage, (void *)(&(perf_ptr[id]->id)));
     }
 }
