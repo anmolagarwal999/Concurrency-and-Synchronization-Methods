@@ -1,6 +1,14 @@
 #include "master_header.h"
 #include "performers.h"
 
+void collect_tshirt(int id)
+{
+    struct performer *ptr = perf_ptr[id];
+    sem_wait(&sem_tshirt_givers);
+    printf(ANSI_GREEN "Performer with id %d collecting tshirt\n", id);
+
+    sem_post(&sem_tshirt_givers);
+}
 void seek_stage(int id)
 {
     //signal respective semaphores and then go to sleep
@@ -69,7 +77,7 @@ void seek_stage(int id)
         if (stage_got == -1)
         {
             //didn't get a stage
-            printf(ANSI_GREEN"Performer %d could not get a stage\n"ANSI_RESET, id);
+            printf(ANSI_GREEN "Performer %d could not get a stage\n" ANSI_RESET, id);
             perf_ptr[id]->curr_stat = Left_show;
             pthread_mutex_unlock(&ptr->mutex);
         }
@@ -85,11 +93,11 @@ void seek_stage(int id)
         pthread_mutex_unlock(&ptr->mutex);
 
         //surely got a stage, wait for performance to get over
-        printf(ANSI_GREEN"Performer %d GOT STAGE\n"ANSI_RESET, id);
+        printf(ANSI_GREEN "Performer %d GOT STAGE\n" ANSI_RESET, id);
 
         pthread_cond_wait(&(ptr->cv), &(ptr->mutex2));
-        printf(ANSI_GREEN"Performer %d needs a t-shirt\n"ANSI_RESET,id);
-        //collect_tshirt();
+        printf(ANSI_GREEN "Performer %d needs a t-shirt\n" ANSI_RESET, id);
+        collect_tshirt(id);
         pthread_mutex_unlock(&ptr->mutex2);
     }
 

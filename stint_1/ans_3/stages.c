@@ -185,10 +185,8 @@ block1:
             }
             else
             {
-                        goto endblock;
-
+                goto endblock;
             }
-            
         }
         else
         {

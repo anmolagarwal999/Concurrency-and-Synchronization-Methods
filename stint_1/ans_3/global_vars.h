@@ -30,7 +30,7 @@ extern int num_coordinators;
 
 extern sem_t sem_a, sem_e, sem_ae, sem_s;
 extern sem_t sem_a_ae_s,sem_e_ae_s;
-extern sem_t rogue_sem;
+extern sem_t rogue_sem,sem_tshirt_givers;
 
 enum performer_statuses{ Unarrived,
                     Waiting,

@@ -9,6 +9,7 @@ int num_coordinators;
 
 sem_t sem_a, sem_e, sem_ae, sem_s;
 sem_t sem_a_ae_s, sem_e_ae_s, rogue_sem;
+sem_t sem_coordinators,tshirt_givers;
 
 int get_performer_type(char ch)
 {
@@ -55,6 +56,10 @@ void take_input()
     scanf("%d", &num_stage_e);
     fflush(stdout);
 
+    printf("Enter number of coordinators: ");
+    scanf("%d", &num_coordinators);
+    fflush(stdout);
+
     printf("Enter min_performance_time: ");
     scanf("%d", &t1);
     fflush(stdout);
@@ -75,6 +80,7 @@ void take_input()
     sem_init(&sem_a_ae_s, 0, 0);
     sem_init(&sem_e_ae_s, 0, 0);
     sem_init(&rogue_sem, 0, 0);
+    sem_init(&sem_tshirt_givers,0,(unsigned int)(num_coordinators));
 }
 
 int main()
