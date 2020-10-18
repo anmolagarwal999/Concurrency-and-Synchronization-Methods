@@ -9,114 +9,101 @@ void collect_tshirt(int id)
 
     sem_post(&sem_tshirt_givers);
 }
-void seek_stage(int id)
-{
-    //signal respective semaphores and then go to sleep
-    struct performer *ptr = perf_ptr[id];
-    int perf_type = ptr->type;
 
-    //https://stackoverflow.com/questions/40153968/does-a-thread-own-a-mutex-after-pthread-cond-timedwait-times-out?rq=1
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////
-    //acquire lock so that no one can signal you before you go to sleep
+void *performer_a_stage(void *ptr2)
+{
+    int id = *((int *)ptr2);
+    struct performer *ptr = perf_ptr[id];
+    sleep(ptr->arrival_time);
+    bool found_stage = false;
+block1:
+    sem_wait(&sem_empty_a);
+    //unnecessary  but still -> preliminary check-> acquire mutex to make sure that status does not change while reading
     pthread_mutex_lock(&ptr->mutex);
-    //change status to waiting
-    ptr->curr_stat = Waiting;
+
+    //preliminary check
+    if (ptr->curr_stat != Waiting)
+    {
+        //No need of this thread any longer
+        //Neceassry to unlock as other redundant thread may need it
+
+        //increment semapore for false alarm
+        sem_post(&sem_empty_a);
+        pthread_mutex_unlock(&ptr->mutex);
+        return NULL;
+    }
     pthread_mutex_unlock(&ptr->mutex);
 
-    //signal respective semaphores
-    if (perf_type == perf_a)
+    for (int i = 0; i < num_stage_a; i++)
     {
-        printf("PERFORMER TYPE IS ACQ\n");
-        sem_post(&sem_a);
-        sem_post(&sem_a_ae_s);
-    }
-    else if (perf_type == perf_e)
-    {
-        printf("PERFORMER TYPE IS ELECTRIC\n");
-
-        sem_post(&sem_e);
-        sem_post(&sem_a_ae_s);
-    }
-    else if (perf_type == perf_ae)
-    {
-        printf("PERFORMER TYPE IS AE BOTH\n");
-
-        sem_post(&sem_ae);
-        sem_post(&sem_a_ae_s);
-        sem_post(&sem_e_ae_s);
-    }
-    else if (perf_type == perf_s)
-    {
-        printf("PERFORMER TYPE IS SINGER\n");
-
-        sem_post(&sem_s);
-        sem_post(&sem_a_ae_s);
-        sem_post(&sem_e_ae_s);
-    }
-    else
-    {
-        printf(ANSI_RED "Weird stuff in Copenganhagen\n" ANSI_RESET);
-        exit(0);
-    }
-
-    ///////////////////////////////////////////////////
-    //Set waiting time limit
-    pthread_mutex_lock(&ptr->mutex);
-    pthread_mutex_lock(&ptr->mutex2);
-
-    struct timespec *st = get_abs_time_obj(patience_time);
-    //https://man7.org/linux/man-pages/man3/pthread_cond_timedwait.3p.html
-    int ret_val = pthread_cond_timedwait(&(ptr->cv), &(ptr->mutex), st);
-    printf("ret value is %d\n", ret_val);
-
-    //MUTEX IS WITH ME CURRENTLY
-    if (ret_val == ETIMEDOUT)
-    {
-        printf(ANSI_YELLOW "TIMER EXPIRED for id %d\n" ANSI_RESET, id);
-        int stage_got = perf_ptr[id]->stage_allotted;
-        if (stage_got == -1)
+        pthread_mutex_lock(&st_ptr[i]->mutex);
+        // enum stage_statuses
+        // {
+        //     Unoccupied,
+        //     one_musician,
+        //     one_singer,
+        //     two_folks
+        // };
+        if (st_ptr[i]->curr_stat == Unoccupied)
         {
-            //didn't get a stage
-            printf(ANSI_GREEN "Performer %d could not get a stage\n" ANSI_RESET, id);
-            perf_ptr[id]->curr_stat = Left_show;
+            //if I am still waiting, i will take this stage
+            pthread_mutex_lock(&ptr->mutex);
+            if (ptr->curr_stat != Waiting)
+            {
+                //I have already gotten another stage
+
+                //increment semapore for false alarm
+                sem_post(&sem_empty_a);
+                pthread_mutex_unlock(&ptr->mutex);
+
+                //Unlock stage mutex which you have locked
+                pthread_mutex_unlock(&st_ptr[i]->mutex);
+
+                return NULL;
+            }
+            else
+            {
+                //Change self status
+                ptr->curr_stat = Performing_solo;
+
+                //Book stage for self
+                st_ptr[i]->curr_stat = one_musician;
+            }
+
             pthread_mutex_unlock(&ptr->mutex);
         }
-        else
-        {
-            //got a stage
-            goto got_stage;
-        }
+        pthread_mutex_unlock(&st_ptr[i]->mutex);
+    }
+
+    if (!found_stage)
+    {
+        printf("Extremely BAD SHIT HAS HAPPENED -> Moriarty\n");
+        exit(0);
+
+        //goto block1->redundant but keep for future debugging
+        goto block1;
     }
     else
     {
-    got_stage:
-        pthread_mutex_unlock(&ptr->mutex);
-
-        //surely got a stage, wait for performance to get over
-        printf(ANSI_GREEN "Performer %d GOT STAGE\n" ANSI_RESET, id);
-
-        pthread_cond_wait(&(ptr->cv), &(ptr->mutex2));
-        printf(ANSI_GREEN "Performer %d needs a t-shirt\n" ANSI_RESET, id);
-        collect_tshirt(id);
-        pthread_mutex_unlock(&ptr->mutex2);
+        give_leader_performance(id);
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////
-    //set performance time and hope for the best
-
-    ////////////////////////////////////////////////////////////////////////////////////
-    //if performance done, collect t-shirt
+    return NULL;
 }
 
-void *performer_entry(void *ptr)
+void give_leader_performance(int id)
 {
-    int id = *((int *)ptr);
+    struct performer *ptr = perf_ptr[id];
+    int perf_type=ptr->type;
+    if(perf_type==perf_s)
+    {
+        //do not invite any singer for duel
+    }
+    else
+    {
+        sem_post(&sem_filled_ae);
+    }
 
-    //wait for arrival time and then start
-    debug(id);
-    printf(ANSI_BLUE "Proposed arrival time is %d\n" ANSI_RESET, perf_ptr[id]->arrival_time);
-    sleep(perf_ptr[id]->arrival_time);
-    perf_ptr[id]->perf_time = get_random_int2(t1, t2, "Pegasus");
-    seek_stage(id);
-    return NULL;
+    //go to sleep
+    
 }

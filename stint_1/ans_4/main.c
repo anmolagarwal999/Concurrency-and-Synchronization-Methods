@@ -7,9 +7,8 @@ int num_stage_a, num_stage_e;
 int tot_num_stages;
 int num_coordinators;
 
-sem_t sem_a, sem_e, sem_ae, sem_s;
-sem_t sem_a_ae_s, sem_e_ae_s, rogue_sem;
-sem_t sem_coordinators,tshirt_givers;
+extern sem_t sem_empty_a, sem_empty_e, sem_filled_ae;
+sem_t sem_coordinators, sem_tshirt_givers;
 
 int get_performer_type(char ch)
 {
@@ -73,14 +72,11 @@ void take_input()
 
     nump_a = 0, nump_e = 0, nump_ae = 0, nump_s = 0;
     //https://www.man7.org/linux/man-pages/man3/sem_init.3.html
-    sem_init(&sem_a, 0, 0);
-    sem_init(&sem_e, 0, 0);
-    sem_init(&sem_ae, 0, 0);
-    sem_init(&sem_s, 0, 0);
-    sem_init(&sem_a_ae_s, 0, 0);
-    sem_init(&sem_e_ae_s, 0, 0);
-    sem_init(&rogue_sem, 0, 0);
-    sem_init(&sem_tshirt_givers,0,(unsigned int)(num_coordinators));
+    sem_init(&sem_empty_a, 0, num_stage_a);
+    sem_init(&sem_empty_e, 0, num_stage_e);
+    sem_init(&sem_filled_ae, 0, 0);
+
+    sem_init(&sem_tshirt_givers, 0, (unsigned int)(num_coordinators));
 }
 
 int main()
@@ -89,11 +85,17 @@ int main()
     //srand(time(0));
     take_input();
     // char inp_helper[100];
-
-       ////////////////////////////////////////////////////////////////////////////
-    tot_num_stages=num_stage_a+num_stage_e;
+    tot_num_stages = num_stage_a + num_stage_e;
     for (i = 0; i < tot_num_stages; i++)
     {
+
+        // enum stage_statuses
+        // {
+        //     Unoccupied,
+        //     one_musician,
+        //     one_singer,
+        //     two_folks
+        // };
         printf("Taking stage stuff\n");
         debug(i);
         fflush(stdout);
@@ -111,12 +113,12 @@ int main()
             st_ptr[i]->type = stage_type_e;
         }
 
-        st_ptr[i]->curr_stat = 0;
-        st_ptr[i]->thr_id = pthread_create(&(st_ptr[i]->thread_obj), NULL, stage_entry, (void *)(&(st_ptr[i]->stage_id)));
+        st_ptr[i]->curr_stat = Unoccupied;
+        pthread_mutex_init(&(st_ptr[i]->mutex), NULL);
     }
+
     //return 0;
-    part2;
-    part2;
+
     printf("Enter details of performers\n");
     for (i = 0; i < tot_num_performers; i++)
     {
@@ -139,33 +141,15 @@ int main()
         printf("Arrival is %d\n", perf_ptr[i]->arrival_time);
         perf_ptr[i]->stage_allotted = -1;
         perf_ptr[i]->type = get_performer_type(perf_ptr[i]->instrument_id);
-        perf_ptr[i]->curr_stat = Unarrived;
+        perf_ptr[i]->curr_stat = Waiting;
         perf_ptr[i]->id = i;
         //printf("name is %s", perf_ptr[i]->name);
 
         pthread_mutex_init(&(perf_ptr[i]->mutex), NULL);
-        pthread_mutex_init(&(perf_ptr[i]->mutex2), NULL);
         pthread_cond_init(&(perf_ptr[i]->cv), NULL);
-
-        //setting pointers to categories
-        if (perf_ptr[i]->type == perf_a)
-        {
-            musc_a_ptr[nump_a++] = perf_ptr[i];
-        }
-        else if (perf_ptr[i]->type == perf_e)
-        {
-            musc_e_ptr[nump_e++] = perf_ptr[i];
-        }
-        else if (perf_ptr[i]->type == perf_ae)
-        {
-            musc_ae_ptr[nump_ae++] = perf_ptr[i];
-        }
-        else if (perf_ptr[i]->type == perf_s)
-        {
-            singer_ptr[nump_s++] = perf_ptr[i];
-        }
-
-        // perf_ptr[i]->thr_id = pthread_create(&(perf_ptr[i]->thread_obj), NULL, performer_entry, (void *)(&(perf_ptr[i]->id)));
+        perf_ptr[i]->perf_time = get_rand_int(t1, t2, "Gotham City");
+        perf_ptr[i]->curr_stat = Unarrived;
+        dispatch_performer(i);
         part;
     }
 
@@ -175,7 +159,6 @@ int main()
         perf_ptr[i]->thr_id = pthread_create(&(perf_ptr[i]->thread_obj), NULL, performer_entry, (void *)(&(perf_ptr[i]->id)));
         part2;
     }
- 
 
     ////////////////////////////////////////////////////////////////////////////
 

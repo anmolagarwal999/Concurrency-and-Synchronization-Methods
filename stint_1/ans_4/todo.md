@@ -1,15 +1,11 @@
-* set pointes of musicans to perfromeers and singers and likewise
-* Creating threads for performers
-* If leaving due to no patience, decrease semaphore
-* no longer WAIT IF ALL performers are done
-*
-*
-*
-*
-*
-*
-*
-*
+* two threads for ae type singers
+* statuses for singers, etc are there already
+* check singer combined via musician
+* Don't forget to singer stage if one new stage arrives
+* After performance over, not signalling down again as it may not be possible
+* Take care of resource deadlock
+* signal to singer only if another performer is not a singer
+* while searching for possible duels, make sure singer is not paired with singer
 *
 *
 *
