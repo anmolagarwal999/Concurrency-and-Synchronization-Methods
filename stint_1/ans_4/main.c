@@ -106,11 +106,11 @@ int main()
         st_ptr[i]->perf_id2 = -1;
         if (i < num_stage_a)
         {
-            st_ptr[i]->type = stage_type_a;
+            st_ptr[i]->type = TYPE_A;
         }
         else
         {
-            st_ptr[i]->type = stage_type_e;
+            st_ptr[i]->type = TYPE_E;
         }
 
         st_ptr[i]->curr_stat = Unoccupied;
@@ -153,24 +153,12 @@ int main()
         part;
     }
 
-    for (i = 0; i < tot_num_performers; i++)
-    {
-
-        perf_ptr[i]->thr_id = pthread_create(&(perf_ptr[i]->thread_obj), NULL, performer_entry, (void *)(&(perf_ptr[i]->id)));
-        part2;
-    }
-
     ////////////////////////////////////////////////////////////////////////////
 
     for (int i = 0; i < tot_num_performers; i++)
     {
 
         pthread_join(perf_ptr[i]->thread_obj, NULL);
-    }
-    for (int i = 0; i < tot_num_stages; i++)
-    {
-
-        pthread_join(st_ptr[i]->thread_obj, NULL);
     }
     printf(ANSI_MAGENTA "----Finished----\nSimulation Over\n" ANSI_RESET);
     fflush(stdout);

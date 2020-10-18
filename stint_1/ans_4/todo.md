@@ -6,9 +6,7 @@
 * Take care of resource deadlock
 * signal to singer only if another performer is not a singer
 * while searching for possible duels, make sure singer is not paired with singer
-*
-*
-*
+* Don't forget to implement timed wait
 *
 *
 *
