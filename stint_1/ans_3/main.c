@@ -8,7 +8,7 @@ int tot_num_stages;
 int num_coordinators;
 
 sem_t sem_a, sem_e, sem_ae, sem_s;
-sem_t sem_a_ae_s, sem_e_ae_s;
+sem_t sem_a_ae_s, sem_e_ae_s,rogue_sem;
 
 int get_performer_type(char ch)
 {
@@ -74,6 +74,7 @@ void take_input()
     sem_init(&sem_s, 0, 0);
     sem_init(&sem_a_ae_s, 0, 0);
     sem_init(&sem_e_ae_s, 0, 0);
+    sem_init(&rogue_sem, 0, 0);
 }
 
 int main()
@@ -108,6 +109,7 @@ int main()
         printf("name is %s", perf_ptr[i]->name);
 
         pthread_mutex_init(&(perf_ptr[i]->mutex), NULL);
+        pthread_mutex_init(&(perf_ptr[i]->mutex2), NULL);
         pthread_cond_init(&(perf_ptr[i]->cv), NULL);
 
         //setting pointers to categories

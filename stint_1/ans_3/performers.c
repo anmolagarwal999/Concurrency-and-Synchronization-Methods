@@ -1,8 +1,6 @@
 #include "master_header.h"
 #include "performers.h"
 
-
-
 void seek_stage(int id)
 {
     //signal respective semaphores and then go to sleep
@@ -15,6 +13,8 @@ void seek_stage(int id)
     pthread_mutex_lock(&ptr->mutex);
     //change status to waiting
     ptr->curr_stat = Waiting;
+    pthread_mutex_unlock(&ptr->mutex);
+
     //signal respective semaphores
     if (perf_type == perf_a)
     {
@@ -46,13 +46,39 @@ void seek_stage(int id)
 
     ///////////////////////////////////////////////////
     //Set waiting time limit
+    pthread_mutex_lock(&ptr->mutex);
+    pthread_mutex_lock(&ptr->mutex2);
+
     struct timespec *st = get_abs_time_obj(patience_time);
     //https://man7.org/linux/man-pages/man3/pthread_cond_timedwait.3p.html
-    int ret_val = pthread_cond_timedwait(&(ptr->cv), &(ptr->mutex),st);
-    printf("ret value is %d\n",ret_val);
-    if(ret_val==ETIMEDOUT)
+    int ret_val = pthread_cond_timedwait(&(ptr->cv), &(ptr->mutex), st);
+    printf("ret value is %d\n", ret_val);
+
+    //MUTEX IS WITH ME CURRENTLY
+    if (ret_val == ETIMEDOUT)
     {
-        printf(ANSI_YELLOW"TIMER EXPIRED for id %d\n"ANSI_RESET,id);
+        printf(ANSI_YELLOW "TIMER EXPIRED for id %d\n" ANSI_RESET, id);
+        int stage_got = perf_ptr[id]->stage_allotted;
+        if (stage_got == -1)
+        {
+            //didn't get a stage
+            perf_ptr[id]->curr_stat = Left_show;
+            pthread_mutex_unlock(&ptr->mutex);
+        }
+        else
+        {
+            //got a stage
+            pthread_mutex_unlock(&ptr->mutex);
+            goto got_stage;
+        }
+    }
+    else
+    {
+    got_stage:
+        //surely got a stage, wait for performance to get over
+        pthread_cond_wait(&(ptr->cv), &(ptr->mutex2));
+        collect_tshirt();
+        pthread_mutex_unlock(&ptr->mutex2);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////
@@ -70,7 +96,7 @@ void *performer_entry(void *ptr)
     debug(id);
     printf(ANSI_BLUE "Proposed arrival time is %d\n" ANSI_RESET, perf_ptr[id]->arrival_time);
     sleep(perf_ptr[id]->arrival_time);
-    perf_ptr[id]->perf_time=get_random_int2(t1,t2,"Pegasus");
+    perf_ptr[id]->perf_time = get_random_int2(t1, t2, "Pegasus");
     seek_stage(id);
     return NULL;
 }

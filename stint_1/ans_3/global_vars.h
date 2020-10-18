@@ -30,6 +30,7 @@ extern int num_coordinators;
 
 extern sem_t sem_a, sem_e, sem_ae, sem_s;
 extern sem_t sem_a_ae_s,sem_e_ae_s;
+extern sem_t rogue_sem;
 
 enum performer_statuses{ Unarrived,
                     Waiting,
@@ -48,7 +49,7 @@ struct performer
     char instrument_id;
     int stage_allotted;
     int perf_time;
-    pthread_mutex_t mutex;
+    pthread_mutex_t mutex,mutex2;
     pthread_cond_t cv;
     pthread_t thread_obj;
     int thr_id;

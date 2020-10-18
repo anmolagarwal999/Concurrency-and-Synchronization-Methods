@@ -8,6 +8,8 @@ void seek_performer_stage(int stage_id)
 {
 
     //wait for one of the performers to come
+    st_ptr[stage_id]->perf_id1 = -1;
+    st_ptr[stage_id]->perf_id2 = -1;
     int curr_st_type = st_ptr[stage_id]->type;
 block1:
     bool found_someone = false;
@@ -30,6 +32,8 @@ block1:
                     found_someone = true;
                     musc_a_ptr[i]->curr_stat = Performing_solo;
                     st_ptr[stage_id]->perf_id1 = musc_a_ptr[i]->id;
+                    musc_a_ptr[i]->stage_allotted = stage_id;
+                    pthread_cond_signal(&musc_a_ptr[i]->cv);
                 }
                 pthread_mutex_unlock(&musc_a_ptr[i]->mutex);
                 if (found_someone)
@@ -41,7 +45,7 @@ block1:
             if (!found_someone)
             {
                 printf(ANSI_RED "WEIRD STUFF IN ALASKA\n" ANSI_RESET);
-                exit(-1);
+                // exit(-1);
             }
         }
         goto endblock;
@@ -65,6 +69,8 @@ block1:
                     found_someone = true;
                     musc_e_ptr[i]->curr_stat = Performing_solo;
                     st_ptr[stage_id]->perf_id1 = musc_e_ptr[i]->id;
+                    musc_e_ptr[i]->stage_allotted = stage_id;
+                    pthread_cond_signal(&musc_e_ptr[i]->cv);
                 }
                 pthread_mutex_unlock(&musc_e_ptr[i]->mutex);
                 if (found_someone)
@@ -93,6 +99,8 @@ block1:
                 found_someone = true;
                 musc_ae_ptr[i]->curr_stat = Performing_solo;
                 st_ptr[stage_id]->perf_id1 = musc_ae_ptr[i]->id;
+                musc_ae_ptr[i]->stage_allotted = stage_id;
+                pthread_cond_signal(&musc_ae_ptr[i]->cv);
             }
             pthread_mutex_unlock(&musc_ae_ptr[i]->mutex);
             if (found_someone)
@@ -120,6 +128,8 @@ block1:
                     found_someone = true;
                     singer_ptr[i]->curr_stat = Performing_solo;
                     st_ptr[stage_id]->perf_id1 = singer_ptr[i]->id;
+                    singer_ptr[i]->stage_allotted = stage_id;
+                    pthread_cond_signal(&singer_ptr[i]->cv);
                 }
                 pthread_mutex_unlock(&singer_ptr[i]->mutex);
                 if (found_someone)
@@ -152,6 +162,18 @@ endblock:
         //let the found guy perform
 
         seek_performer_stage_one_occupant(stage_id);
+
+        int leader_id = st_ptr[stage_id]->perf_id1;
+        int follower_id = st_ptr[stage_id]->perf_id2;
+        pthread_mutex_lock(&perf_ptr[leader_id]->mutex2);
+        pthread_cond_signal(&perf_ptr[leader_id]->cv);
+        pthread_mutex_unlock(&perf_ptr[leader_id]->mutex2);
+        if (follower_id != -1)
+        {
+            pthread_mutex_lock(&perf_ptr[follower_id]->mutex2);
+            pthread_cond_signal(&perf_ptr[follower_id]->cv);
+            pthread_mutex_unlock(&perf_ptr[follower_id]->mutex2);
+        }
         goto block1;
     }
 }
@@ -161,10 +183,14 @@ void seek_other_occupant_if_legal(int stage_id)
 
     int already_id = st_ptr[stage_id]->perf_id1;
     struct performer *leader = perf_ptr[already_id];
+    struct performer *follower = NULL;
+
     struct timespec *st = get_abs_time_obj(leader->perf_time);
     if (leader->type == perf_s)
     {
         //just wait
+        //already happening at bottom
+        //Don't meddle with this part
     }
     else
     {
@@ -188,6 +214,9 @@ void seek_other_occupant_if_legal(int stage_id)
                     found_someone = true;
                     singer_ptr[i]->curr_stat = Performing_duel;
                     st_ptr[stage_id]->perf_id2 = singer_ptr[i]->id;
+                    printf("SINGER HAS JOINED MUSICIAN ON THE STAGE\n");
+                    singer_ptr[i]->stage_allotted = stage_id;
+                    pthread_cond_signal(&singer_ptr[i]->cv);
                 }
                 pthread_mutex_unlock(&singer_ptr[i]->mutex);
                 if (found_someone)
@@ -203,14 +232,12 @@ void seek_other_occupant_if_legal(int stage_id)
             }
             else
             {
-                struct performer *follower = perf_ptr[st_ptr[stage_id]->perf_id2];
-                printf("SINGER HAS JOINED MUSICIAN ON THE STAGE\n");
-
-                //EXTEND PERFORMANCE TIME by 2sec
-                sleep(2);
+                follower = perf_ptr[st_ptr[stage_id]->perf_id2];
+                st->tv_sec += 2;
             }
         }
     }
+    sem_timedwait(&rogue_sem, st);
 }
 
 void *stage_entry(void *ptr)
