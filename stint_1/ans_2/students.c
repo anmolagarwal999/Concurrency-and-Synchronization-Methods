@@ -72,7 +72,7 @@ void seek_hospital(int id)
     pthread_mutex_lock(&conclusions_mutex);
     tot_conclusions_left--;
     pthread_mutex_unlock(&conclusions_mutex);
-    printf(ANSI_BLUE "Student %d   is unable to develop anibodies even after 3 attempts,he has to return home\n" ANSI_RESET,id);
+    printf(ANSI_BLUE "Student %d   is unable to develop anibodies even after 3 attempts,he has to return home\n" ANSI_RESET, id);
     return;
 
     //update conclusions mutex
@@ -83,9 +83,11 @@ void *init_student(void *ptr)
     int id = *((int *)ptr);
 
     int late_time = get_random_int(0, latest_arrival_permitted);
+
     stu_ptr[id]->arrival_time = late_time;
     //stu_ptr[id]->curr_stat = 0;
     stu_ptr[id]->rounds_already = 0;
+    stu_ptr[id]->vaccine_comp_id=-1;
 
     if (late_time != 0)
     {

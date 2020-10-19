@@ -2,17 +2,14 @@
 
 // struct hospital
 // {
-//     pthread_t thread_obj;
-
-//     int id;
-//     int thr_id;
-
-//     int partner_company;
-//     int tot_vaccines;
-//     int left_vaccines;
-//     int curr_slots;
-//     int left_slots;
+//
+//     int partner_company; //comapany whose batch currently using
+//     int tot_vaccines;    //tot vaccines stocked
+//     int left_vaccines;   //vaccines left in current stock
+//     int curr_slots;      //current number of doctors present to administer the vaccine
+//     int left_slots;      //doctors waiting for patient
 //     pthread_mutex_t mutex;
+//     int curr_served_students[10]; //ids of students part of current vaccination phase
 // };
 
 int get_min(int a, int b)
@@ -43,7 +40,7 @@ void buy_batch_from_company(int id)
                 if (pthread_mutex_trylock(&(comp_ptr[curr_check_id]->mutex)) == EBUSY)
                 {
                     //EBUSY  The mutex could not be acquired because it was already locked.
-                    printf("Company with id %d is busy deciding transit changes, hence did not answer call from centre %d\n",curr_check_id,id);
+                    printf("Company with id %d is busy deciding transit changes, hence did not answer call from centre %d\n", curr_check_id, id);
                 }
                 else
                 {
@@ -163,6 +160,7 @@ void vaccinate_students(int id, int filled_slots)
 void *init_hospitals(void *ptr)
 {
     int id = *((int *)ptr);
+
     hosp_ptr[id]->curr_slots = 0;
     hosp_ptr[id]->left_slots = 0;
     hosp_ptr[id]->left_vaccines = 0;

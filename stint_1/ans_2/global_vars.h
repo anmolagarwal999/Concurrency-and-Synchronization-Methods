@@ -12,6 +12,16 @@
 #define ANSI_CYAN    "\x1b[36m"
 #define ANSI_RESET   "\x1b[0m"
 
+//Regular bold text
+#define BBLK "\e[1;30m"
+#define BRED "\e[1;31m"
+#define BGRN "\e[1;32m"
+#define BYEL "\e[1;33m"
+#define BBLU "\e[1;34m"
+#define BMAG "\e[1;35m"
+#define BCYN "\e[1;36m"
+#define BWHT "\e[1;37m"
+
 extern int num_hospitals;
 extern int num_companies;
 extern int num_students;
@@ -25,12 +35,12 @@ extern int latest_arrival_permitted;
 struct company
 {
     pthread_t thread_obj;
-    int id;
+    int id; //Company id
     int thr_id;
-    int curr_batches_num;
-    int left_batches_num;
-    int done_batches;
-    int capacity_of_batches;
+    int curr_batches_num; //batches produced in the last manufacture stint
+    int left_batches_num;  //batches yet to be gully consumed
+    int done_batches;  //batches which have been fully consumed
+    int capacity_of_batches;  //number of vaccines in each batch of the current manufacture stint
     long double prob_of_success;
     pthread_mutex_t mutex;
     pthread_cond_t cv;
@@ -43,13 +53,13 @@ struct hospital
     int id;
     int thr_id;
 
-    int partner_company;
-    int tot_vaccines;
-    int left_vaccines;
-    int curr_slots;
-    int left_slots;
+    int partner_company;  //comapany whose batch currently using
+    int tot_vaccines;  //tot vaccines stocked
+    int left_vaccines;  //vaccines left in current stock
+    int curr_slots;  //current number of doctors present to administer the vaccine
+    int left_slots;  //doctors waiting for patient
     pthread_mutex_t mutex;
-    int curr_served_students[10];
+    int curr_served_students[10]; //ids of students part of current vaccination phase
 };
 
 struct student
@@ -65,8 +75,8 @@ struct student
     //1-> ongoing
     //2-> successful vaccination
     int curr_stat;
-    int rounds_already;
-    int vaccine_comp_id;
+    int rounds_already;  //number of vaccines already given
+    int vaccine_comp_id; //brand of vaccine he received
     pthread_mutex_t mutex;
 };
 
