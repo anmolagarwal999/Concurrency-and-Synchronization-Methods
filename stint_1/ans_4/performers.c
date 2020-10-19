@@ -21,7 +21,7 @@ void collect_tshirt(int id)
     pthread_mutex_lock(&perf_ptr[id]->mutex);
     perf_ptr[id]->curr_stat = Collecting_shirt;
     pthread_mutex_unlock(&perf_ptr[id]->mutex);
-    printf(ANSI_MAGENTA "Performer with name %s collecting tshirt\n"ANSI_RESET, perf_ptr[id]->name);
+    printf(ANSI_MAGENTA "Performer with name %s collecting tshirt\n" ANSI_RESET, perf_ptr[id]->name);
     sleep(2);
     pthread_mutex_lock(&perf_ptr[id]->mutex);
     perf_ptr[id]->curr_stat = Left_show;
@@ -34,81 +34,101 @@ void *performer_empty_a_stage(void *ptr1)
     int id = *((int *)ptr1);
     struct performer *ptr = perf_ptr[id];
     sleep(ptr->arrival_time);
+    int ret1;
     bool found_stage = false;
+    struct timespec *st = get_abs_time_obj(perf_ptr[id]->perf_time);
+
     printf("Entered searching for acqoustic stage\n");
 block1:
     found_stage = false;
-    sem_wait(&sem_empty_a);
-    //unnecessary  but still -> preliminary check-> acquire mutex to make sure that status does not change while reading
-    pthread_mutex_lock(&ptr->mutex);
-
-    //preliminary check
-    if (ptr->curr_stat != Waiting)
+    ret1 = sem_timedwait(&sem_empty_a, st);
+    if (ret1 == 0)
     {
-        //No need of this thread any longer
-        //Neceassry to unlock as other redundant thread may need it
+        //unnecessary  but still -> preliminary check-> acquire mutex to make sure that status does not change while reading
+        pthread_mutex_lock(&ptr->mutex);
 
-        //increment semapore for false alarm
-        sem_post(&sem_empty_a);
-        pthread_mutex_unlock(&ptr->mutex);
-        return NULL;
-    }
-    pthread_mutex_unlock(&ptr->mutex);
-
-    for (int i = 0; i < num_stage_a && found_stage == false; i++)
-    {
-        pthread_mutex_lock(&st_ptr[i]->mutex);
-        // enum stage_statuses
-        // {
-        //     Unoccupied,
-        //     one_musician,
-        //     one_singer,
-        //     two_folks
-        // };
-        if (st_ptr[i]->curr_stat == Unoccupied)
+        //preliminary check
+        if (ptr->curr_stat != Waiting)
         {
-            //if I am still waiting, i will take this stage
-            pthread_mutex_lock(&ptr->mutex);
-            if (ptr->curr_stat != Waiting)
-            {
-                //I have already gotten another stage
+            //No need of this thread any longer
+            //Neceassry to unlock as other redundant thread may need it
 
-                //increment semapore for false alarm
-                sem_post(&sem_empty_a);
-                pthread_mutex_unlock(&ptr->mutex);
-
-                //Unlock stage mutex which you have locked
-                pthread_mutex_unlock(&st_ptr[i]->mutex);
-
-                return NULL;
-            }
-            else
-            {
-                //Change self status
-                ptr->curr_stat = Performing_solo;
-                ptr->stage_allotted = st_ptr[i]->stage_id;
-                found_stage = true;
-                //Book stage for self
-                st_ptr[i]->curr_stat = one_occupant;
-                st_ptr[i]->perf_id1 = ptr->id;
-            }
-
+            //increment semapore for false alarm
+            sem_post(&sem_empty_a);
             pthread_mutex_unlock(&ptr->mutex);
+            return NULL;
         }
-        pthread_mutex_unlock(&st_ptr[i]->mutex);
-    }
+        pthread_mutex_unlock(&ptr->mutex);
 
-    if (!found_stage)
-    {
-        printf("Extremely BAD SHIT HAS HAPPENED -> Moriarty\n");
-        exit(0);
+        for (int i = 0; i < num_stage_a && found_stage == false; i++)
+        {
+            pthread_mutex_lock(&st_ptr[i]->mutex);
+            // enum stage_statuses
+            // {
+            //     Unoccupied,
+            //     one_musician,
+            //     one_singer,
+            //     two_folks
+            // };
+            if (st_ptr[i]->curr_stat == Unoccupied)
+            {
+                //if I am still waiting, i will take this stage
+                pthread_mutex_lock(&ptr->mutex);
+                if (ptr->curr_stat != Waiting)
+                {
+                    //I have already gotten another stage
 
-        //goto block1->redundant but keep for future debugging
-        goto block1;
+                    //increment semapore for false alarm
+                    sem_post(&sem_empty_a);
+                    pthread_mutex_unlock(&ptr->mutex);
+
+                    //Unlock stage mutex which you have locked
+                    pthread_mutex_unlock(&st_ptr[i]->mutex);
+
+                    return NULL;
+                }
+                else
+                {
+                    //Change self status
+                    ptr->curr_stat = Performing_solo;
+                    ptr->stage_allotted = st_ptr[i]->stage_id;
+                    found_stage = true;
+                    //Book stage for self
+                    st_ptr[i]->curr_stat = one_occupant;
+                    st_ptr[i]->perf_id1 = ptr->id;
+                }
+
+                pthread_mutex_unlock(&ptr->mutex);
+            }
+            pthread_mutex_unlock(&st_ptr[i]->mutex);
+        }
+
+        if (!found_stage)
+        {
+            printf("Extremely BAD SHIT HAS HAPPENED -> Moriarty\n");
+            exit(0);
+
+            //goto block1->redundant but keep for future debugging
+            goto block1;
+        }
+        else
+        {
+            give_leader_performance(id);
+        }
     }
     else
     {
-        give_leader_performance(id);
+        //display that he left as he was impatient
+        pthread_mutex_lock(&ptr->mutex);
+        //still check if still waiting, change to leftover and display message
+        if (ptr->curr_stat == Waiting)
+        {
+            ptr->curr_stat = Left_show;
+            printf(ANSI_CYAN "Performer %s became impatient and left the show" ANSI_RESET);
+        }
+        //if not, then either some other thread got a stage for performer or the other thread already left
+        //nothing to be done, just leave
+        pthread_mutex_unlock(&ptr->mutex);
     }
 
     return NULL;
@@ -120,89 +140,110 @@ void *performer_empty_e_stage(void *ptr2)
     struct performer *ptr = perf_ptr[id];
     sleep(ptr->arrival_time);
     bool found_stage = false;
+    struct timespec *st = get_abs_time_obj(perf_ptr[id]->perf_time);
+
     printf("Entered searching for elctric stage\n");
+    int ret2;
 
 block2:
     found_stage = false;
-    sem_wait(&sem_empty_e);
-    //unnecessary  but still -> preliminary check-> acquire mutex to make sure that status does not change while reading
-    pthread_mutex_lock(&ptr->mutex);
+    ret2 = sem_timedwait(&sem_empty_e, st);
 
-    //preliminary check
-    if (ptr->curr_stat != Waiting)
+    if (ret2 == 0)
     {
-        //No need of this thread any longer
-        //Neceassry to unlock as other redundant thread may need it
+        //unnecessary  but still -> preliminary check-> acquire mutex to make sure that status does not change while reading
+        pthread_mutex_lock(&ptr->mutex);
 
-        //increment semapore for false alarm
-        printf(ANSI_RED "FALSE ALARM . I AM PRIVILEGED status is %d\n" ANSI_RESET, ptr->curr_stat);
-        sem_post(&sem_empty_e);
-        pthread_mutex_unlock(&ptr->mutex);
-        return NULL;
-    }
-    pthread_mutex_unlock(&ptr->mutex);
-
-    for (int i = num_stage_a; i < tot_num_stages && found_stage == false; i++)
-    {
-        //debug(i);
-        // printf("investigating stage with id %d\n", i);
-        pthread_mutex_lock(&st_ptr[i]->mutex);
-        // printf("Able to get mutex of stage with id %d| Status is %d\n", st_ptr[i]->stage_id, st_ptr[i]->curr_stat);
-        fflush(stdout);
-        // enum stage_statuses
-        // {
-        //     Unoccupied,
-        //     one_musician,
-        //     one_singer,
-        //     two_folks
-        // };
-        if (st_ptr[i]->curr_stat == Unoccupied)
+        //preliminary check
+        if (ptr->curr_stat != Waiting)
         {
-            //if I am still waiting, i will take this stage
-            //printf("Found stage unoccupied\n");
-            pthread_mutex_lock(&ptr->mutex);
-            if (ptr->curr_stat != Waiting)
-            {
-                //I have already gotten another stage
+            //No need of this thread any longer
+            //Neceassry to unlock as other redundant thread may need it
 
-                //increment semapore for false alarm
-                sem_post(&sem_empty_e);
-                pthread_mutex_unlock(&ptr->mutex);
-
-                //Unlock stage mutex which you have locked
-                pthread_mutex_unlock(&st_ptr[i]->mutex);
-
-                return NULL;
-            }
-            else
-            {
-                //Change self status
-                ptr->curr_stat = Performing_solo;
-                found_stage = true;
-                ptr->stage_allotted = st_ptr[i]->stage_id;
-
-                //Book stage for self
-                st_ptr[i]->curr_stat = one_occupant;
-                st_ptr[i]->perf_id1 = ptr->id;
-            }
-
+            //increment semapore for false alarm
+            printf(ANSI_RED "FALSE ALARM . I AM PRIVILEGED status is %d\n" ANSI_RESET, ptr->curr_stat);
+            sem_post(&sem_empty_e);
             pthread_mutex_unlock(&ptr->mutex);
+            return NULL;
         }
-        pthread_mutex_unlock(&st_ptr[i]->mutex);
-    }
+        pthread_mutex_unlock(&ptr->mutex);
 
-    if (!found_stage)
-    {
-        printf("Extremely BAD SHIT HAS HAPPENED -> Red John\n");
-        exit(0);
+        for (int i = num_stage_a; i < tot_num_stages && found_stage == false; i++)
+        {
+            //debug(i);
+            // printf("investigating stage with id %d\n", i);
+            pthread_mutex_lock(&st_ptr[i]->mutex);
+            // printf("Able to get mutex of stage with id %d| Status is %d\n", st_ptr[i]->stage_id, st_ptr[i]->curr_stat);
+            fflush(stdout);
+            // enum stage_statuses
+            // {
+            //     Unoccupied,
+            //     one_musician,
+            //     one_singer,
+            //     two_folks
+            // };
+            if (st_ptr[i]->curr_stat == Unoccupied)
+            {
+                //if I am still waiting, i will take this stage
+                //printf("Found stage unoccupied\n");
+                pthread_mutex_lock(&ptr->mutex);
+                if (ptr->curr_stat != Waiting)
+                {
+                    //I have already gotten another stage
 
-        //goto block2->redundant but keep for future debugging
-        goto block2;
+                    //increment semapore for false alarm
+                    sem_post(&sem_empty_e);
+                    pthread_mutex_unlock(&ptr->mutex);
+
+                    //Unlock stage mutex which you have locked
+                    pthread_mutex_unlock(&st_ptr[i]->mutex);
+
+                    return NULL;
+                }
+                else
+                {
+                    //Change self status
+                    ptr->curr_stat = Performing_solo;
+                    found_stage = true;
+                    ptr->stage_allotted = st_ptr[i]->stage_id;
+
+                    //Book stage for self
+                    st_ptr[i]->curr_stat = one_occupant;
+                    st_ptr[i]->perf_id1 = ptr->id;
+                }
+
+                pthread_mutex_unlock(&ptr->mutex);
+            }
+            pthread_mutex_unlock(&st_ptr[i]->mutex);
+        }
+
+        if (!found_stage)
+        {
+            printf("Extremely BAD SHIT HAS HAPPENED -> Red John\n");
+            exit(0);
+
+            //goto block2->redundant but keep for future debugging
+            goto block2;
+        }
+        else
+        {
+            printf("I have been able to find a stage\n");
+            give_leader_performance(id);
+        }
     }
     else
     {
-        printf("I have been able to find a stage\n");
-        give_leader_performance(id);
+        //display that he left as he was impatient
+        pthread_mutex_lock(&ptr->mutex);
+        //still check if still waiting, change to leftover and display message
+        if (ptr->curr_stat == Waiting)
+        {
+            ptr->curr_stat = Left_show;
+            printf(ANSI_CYAN "Performer %s became impatient and left the show" ANSI_RESET);
+        }
+        //if not, then either some other thread got a stage for performer or the other thread already left
+        //nothing to be done, just leave
+        pthread_mutex_unlock(&ptr->mutex);
     }
 
     return NULL;
@@ -213,87 +254,108 @@ void *performer_filled_ae_stage(void *ptr3)
     int id = *((int *)ptr3);
     struct performer *ptr = perf_ptr[id];
     sleep(ptr->arrival_time);
+    struct timespec *st = get_abs_time_obj(perf_ptr[id]->perf_time);
+
     bool found_stage = false;
+    int ret3;
 block3:
     found_stage = false;
-    sem_wait(&sem_filled_ae);
+    ret3 = sem_timedwait(&sem_filled_ae,st);
     //unnecessary  but still -> preliminary check-> acquire mutex to make sure that status does not change while reading
-    pthread_mutex_lock(&ptr->mutex);
-
-    //preliminary check
-    if (ptr->curr_stat != Waiting)
+    if (ret3 == 0)
     {
-        //No need of this thread any longer
-        //Necessary to unlock as other redundant thread may need it
+        pthread_mutex_lock(&ptr->mutex);
 
-        //increment semapore for false alarm
-        sem_post(&sem_filled_ae);
-        pthread_mutex_unlock(&ptr->mutex);
-        return NULL;
-    }
-    pthread_mutex_unlock(&ptr->mutex);
-
-    for (int i = 0; i < tot_num_stages && found_stage == false; i++)
-    {
-        printf("trying to acquire lock for DUEL FUNC %d\n", i);
-        pthread_mutex_lock(&st_ptr[i]->mutex);
-        // enum stage_statuses
-        // {
-        //     Unoccupied,
-        //     one_musician,
-        //     one_singer,
-        //     two_folks
-        // };
-        if (st_ptr[i]->curr_stat == open_to_duel && is_musician(st_ptr[i]->perf_id1))
+        //preliminary check
+        if (ptr->curr_stat != Waiting)
         {
-            //if I am still waiting, i will take this stage
-            pthread_mutex_lock(&ptr->mutex);
-            if (ptr->curr_stat != Waiting)
-            {
-                //I have already gotten another stage
+            //No need of this thread any longer
+            //Necessary to unlock as other redundant thread may need it
 
-                //increment semaphore for false alarm
-                sem_post(&sem_filled_ae);
-                pthread_mutex_unlock(&ptr->mutex);
-
-                //Unlock stage mutex which you have locked
-                pthread_mutex_unlock(&st_ptr[i]->mutex);
-
-                return NULL;
-            }
-            else
-            {
-                //Change self status
-                ptr->curr_stat = Performing_duel;
-                found_stage = true;
-
-                //Book stage for self
-                st_ptr[i]->curr_stat = two_folks;
-                st_ptr[i]->perf_id2 = ptr->id;
-                ptr->stage_allotted = st_ptr[i]->stage_id;
-
-                int leader_id = st_ptr[i]->perf_id1;
-                perf_ptr[leader_id]->curr_stat = Performing_duel;
-                printf(ANSI_BLUE "Singer %s is starting DUEL on stage id %d with %s\n" ANSI_RESET, ptr->name, st_ptr[i]->stage_id, perf_ptr[leader_id]->name);
-            }
-
+            //increment semapore for false alarm
+            sem_post(&sem_filled_ae);
             pthread_mutex_unlock(&ptr->mutex);
+            return NULL;
         }
-        pthread_mutex_unlock(&st_ptr[i]->mutex);
-    }
+        pthread_mutex_unlock(&ptr->mutex);
 
-    if (!found_stage)
-    {
-        printf("False alarm -> Loki\n");
-        goto block3;
+        for (int i = 0; i < tot_num_stages && found_stage == false; i++)
+        {
+            printf("trying to acquire lock for DUEL FUNC %d\n", i);
+            pthread_mutex_lock(&st_ptr[i]->mutex);
+            // enum stage_statuses
+            // {
+            //     Unoccupied,
+            //     one_musician,
+            //     one_singer,
+            //     two_folks
+            // };
+            if (st_ptr[i]->curr_stat == open_to_duel && is_musician(st_ptr[i]->perf_id1))
+            {
+                //if I am still waiting, i will take this stage
+                pthread_mutex_lock(&ptr->mutex);
+                if (ptr->curr_stat != Waiting)
+                {
+                    //I have already gotten another stage
+
+                    //increment semaphore for false alarm
+                    sem_post(&sem_filled_ae);
+                    pthread_mutex_unlock(&ptr->mutex);
+
+                    //Unlock stage mutex which you have locked
+                    pthread_mutex_unlock(&st_ptr[i]->mutex);
+
+                    return NULL;
+                }
+                else
+                {
+                    //Change self status
+                    ptr->curr_stat = Performing_duel;
+                    found_stage = true;
+
+                    //Book stage for self
+                    st_ptr[i]->curr_stat = two_folks;
+                    st_ptr[i]->perf_id2 = ptr->id;
+                    ptr->stage_allotted = st_ptr[i]->stage_id;
+
+                    int leader_id = st_ptr[i]->perf_id1;
+                    perf_ptr[leader_id]->curr_stat = Performing_duel;
+                    printf(ANSI_BLUE "Singer %s is starting DUEL on stage id %d with %s\n" ANSI_RESET, ptr->name, st_ptr[i]->stage_id, perf_ptr[leader_id]->name);
+                }
+
+                pthread_mutex_unlock(&ptr->mutex);
+            }
+            pthread_mutex_unlock(&st_ptr[i]->mutex);
+        }
+
+        if (!found_stage)
+        {
+            printf("False alarm -> Loki\n");
+            goto block3;
+        }
+        else
+        {
+            // leave matter in leader's hands
+        }
     }
     else
     {
-        // leave matter in leader's hands
+        //display that he left as he was impatient
+        pthread_mutex_lock(&ptr->mutex);
+        //still check if still waiting, change to leftover and display message
+        if (ptr->curr_stat == Waiting)
+        {
+            ptr->curr_stat = Left_show;
+            printf(ANSI_CYAN "Performer %s became impatient and left the show" ANSI_RESET);
+        }
+        //if not, then either some other thread got a stage for performer or the other thread already left
+        //nothing to be done, just leave
+        pthread_mutex_unlock(&ptr->mutex);
     }
 
     return NULL;
 }
+
 void give_leader_performance(int id)
 {
     struct performer *ptr = perf_ptr[id];
