@@ -33,12 +33,13 @@ void *performer_empty_a_stage(void *ptr1)
 {
     int id = *((int *)ptr1);
     struct performer *ptr = perf_ptr[id];
-    sem_timedwait(&rogue_sem, perf_ptr[id]->arrival_time);
+    printf(ANSI_RED "rogue id is %d\n" ANSI_RESET, id);
+    sem_timedwait(&rogue_sem, perf_ptr[id]->st_arrival);
     pthread_mutex_lock(&ptr->mutex);
     if (ptr->curr_stat == Unarrived)
     {
         ptr->curr_stat = Waiting;
-        printf(BYEL "Performer %s has arrived and plays instrument %c\n" ANSI_RESET, id, perf_ptr[id]->instrument_id);
+        printf(BYEL "Performer %s has arrived and plays instrument %c\n" ANSI_RESET, perf_ptr[id]->name, perf_ptr[id]->instrument_id);
     }
     pthread_mutex_unlock(&ptr->mutex);
 
@@ -132,7 +133,7 @@ block1:
         if (ptr->curr_stat == Waiting)
         {
             ptr->curr_stat = Left_show;
-            printf(BCYN "Performer %s became impatient and left the show" ANSI_RESET);
+            printf(BCYN "Performer %s became impatient and left the show\n" ANSI_RESET, perf_ptr[id]->name);
         }
         //if not, then either some other thread got a stage for performer or the other thread already left
         //nothing to be done, just leave
@@ -146,16 +147,17 @@ void *performer_empty_e_stage(void *ptr2)
 {
     int id = *((int *)ptr2);
     struct performer *ptr = perf_ptr[id];
+    printf(ANSI_RED "rogue id is %d\n" ANSI_RESET, id);
 
     bool found_stage = false;
     struct timespec *st = perf_ptr[id]->st_leave;
-    sem_timedwait(&rogue_sem, perf_ptr[id]->arrival_time);
+    sem_timedwait(&rogue_sem, perf_ptr[id]->st_arrival);
 
     pthread_mutex_lock(&ptr->mutex);
     if (ptr->curr_stat == Unarrived)
     {
         ptr->curr_stat = Waiting;
-        printf(BYEL "Performer %s has arrived and plays instrument %c\n" ANSI_RESET, id, perf_ptr[id]->instrument_id);
+        printf(BYEL "Performer %s has arrived and plays instrument %c\n" ANSI_RESET, perf_ptr[id]->name, perf_ptr[id]->instrument_id);
     }
     pthread_mutex_unlock(&ptr->mutex);
 
@@ -256,7 +258,7 @@ block2:
         if (ptr->curr_stat == Waiting)
         {
             ptr->curr_stat = Left_show;
-            printf(BCYN "Performer %s became impatient and left the show" ANSI_RESET);
+            printf(BCYN "Performer %s became impatient and left the show\n" ANSI_RESET, perf_ptr[id]->name);
         }
         //if not, then either some other thread got a stage for performer or the other thread already left
         //nothing to be done, just leave
@@ -270,13 +272,13 @@ void *performer_filled_ae_stage(void *ptr3)
 {
     int id = *((int *)ptr3);
     struct performer *ptr = perf_ptr[id];
-    sem_timedwait(&rogue_sem, perf_ptr[id]->arrival_time);
+    sem_timedwait(&rogue_sem, perf_ptr[id]->st_arrival);
 
     pthread_mutex_lock(&ptr->mutex);
     if (ptr->curr_stat == Unarrived)
     {
         ptr->curr_stat = Waiting;
-        printf(BYEL "Performer %s has arrived and plays instrument %c\n" ANSI_RESET, id, perf_ptr[id]->instrument_id);
+        printf(BYEL "Performer %s has arrived and plays instrument %c\n" ANSI_RESET, perf_ptr[id]->name, perf_ptr[id]->instrument_id);
     }
     pthread_mutex_unlock(&ptr->mutex);
     struct timespec *st = perf_ptr[id]->st_leave;
@@ -371,7 +373,7 @@ block3:
         if (ptr->curr_stat == Waiting)
         {
             ptr->curr_stat = Left_show;
-            printf(BCYN "Performer %s became impatient and left the show" ANSI_RESET);
+            printf(BCYN "Performer %s became impatient and left the show\n" ANSI_RESET, perf_ptr[id]->name);
         }
         //if not, then either some other thread got a stage for performer or the other thread already left
         //nothing to be done, just leave
@@ -388,8 +390,10 @@ void give_leader_performance(int id)
     int stage_id = ptr->stage_allotted;
     if (perf_type == perf_s)
     {
-        //do not invite any singer for duel
-        printf(ANSI_GREEN "Singer %s is starting solo on stage id %d for time %d secs\n" ANSI_RESET, ptr->name, stage_id, ptr->instrument_id, ptr->perf_time);
+        //do not invite any other singer for duel
+
+        printf("SOLO SINGER TIME IS %d\n", perf_ptr[id]->perf_time);
+        printf(ANSI_GREEN "Singer %s is starting solo on stage id %d for time %d secs\n" ANSI_RESET, ptr->name, stage_id,  ptr->perf_time);
     }
     else
     {
