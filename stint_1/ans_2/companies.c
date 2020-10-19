@@ -1,7 +1,7 @@
 #include "master_header.h"
 
 // int curr_batches_num; //batches produced in the last manufacture stint
-// int left_batches_num;  //batches yet to be gully consumed
+// int left_batches_num;  //batches yet to be fully consumed
 // int done_batches;  //batches which have been fully consumed
 // int capacity_of_batches;  //number of vaccines in each batch of the current manufacture stint
 
@@ -12,18 +12,16 @@ void prep_stock(int id)
     {
         if (tot_conclusions_left == 0)
         {
-            printf("BREAKING\n");
+            //Comapny no longer wants to prepare vaccine if all students have reached a verdict
+            printf(ANSI_RED"BREAKING PEGASUS: Comapany exiting as all students have reached verdicts\n"ANSI_RESET);
             break;
         }
 
-        // int prep_time = get_random_int(2, 5);
-        int prep_time = get_random_int2(2, 5, "in prep stock");
-        // comp_ptr[id]->capacity_of_batches = get_random_int(10, 20);
-        comp_ptr[id]->capacity_of_batches = get_random_int2(2, 5, "in prep stock-> 2");
+        int prep_time = get_random_int2(w_min_prepare_time, w_max_prepare_time, "in prep stock");
+        comp_ptr[id]->capacity_of_batches = get_random_int2(p_min_val, p_max_val, "in prep stock-> 2");
         comp_ptr[id]->done_batches = 0;
-        // int num_batches = get_random_int(1, 5);
-        int num_batches = get_random_int2(2, 5, "in prep stock-> 3");
-        printf(ANSI_YELLOW "Company %d\t is preparing %d batches of vaccines which have success probability %Lf\n" ANSI_RESET, comp_ptr[id]->id, num_batches, comp_ptr[id]->prob_of_success);
+        int num_batches = get_random_int2(r_min_val, r_max_val, "in prep stock-> 3");
+        printf(ANSI_YELLOW "Company %d\t is preparing %d batches of vaccines of capacity %d each which have success probability %Lf\n" ANSI_RESET, comp_ptr[id]->id, num_batches, comp_ptr[id]->capacity_of_batches, comp_ptr[id]->prob_of_success);
 
         sleep(prep_time);
 
@@ -32,8 +30,13 @@ void prep_stock(int id)
          to true and the company sleeps, then company will never wake up*/
         pthread_mutex_lock(&(comp_ptr[id]->mutex));
 
+        //batches produced in the last manufacture stint
         comp_ptr[id]->curr_batches_num = num_batches;
+
+        //batches yet to be fully consumed
         comp_ptr[id]->left_batches_num = comp_ptr[id]->curr_batches_num;
+
+        comp_ptr[id]->done_batches=0;
         printf(ANSI_YELLOW "Company %d\t HAS PREPARED %d batches of vaccines which have success probability %Lf\n" ANSI_RESET, comp_ptr[id]->id, num_batches, comp_ptr[id]->prob_of_success);
 
         dispatch_stock(id);

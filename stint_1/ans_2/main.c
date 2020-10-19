@@ -9,6 +9,12 @@ int hopeful_students_num;
 pthread_mutex_t conclusions_mutex;
 pthread_mutex_t hopeful_mutex;
 
+int w_min_prepare_time=2,w_max_prepare_time=5;
+int r_min_val=1,r_max_val=5;
+int p_min_val=10,p_max_val=20;
+
+
+
 void take_input()
 {
     printf("Enter number of companies:");

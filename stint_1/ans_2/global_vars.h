@@ -29,6 +29,8 @@ extern int tot_conclusions_left;
 extern int hopeful_students_num;
 extern pthread_mutex_t conclusions_mutex;
 extern pthread_mutex_t hopeful_mutex;
+extern int w_min_prepare_time,w_max_prepare_time;
+extern int r_min_val,r_max_val,p_min_val,p_max_val;
 
 extern int latest_arrival_permitted;
 
