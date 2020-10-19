@@ -3,7 +3,7 @@
 int num_hospitals;
 int num_companies;
 int num_students;
-int latest_arrival_permitted = 30;
+int latest_arrival_permitted = 15;
 int tot_conclusions_left;
 int hopeful_students_num;
 pthread_mutex_t conclusions_mutex;
@@ -15,11 +15,11 @@ int p_min_val = 10, p_max_val = 20;
 
 void take_input()
 {
-    printf("Enter number of companies:");
+    //printf("Enter number of companies:");
     scanf("%d", &num_companies);
-    printf("Enter number of vaccination zones:");
+   // printf("Enter number of vaccination zones:");
     scanf("%d", &num_hospitals);
-    printf("Enter number of students: ");
+   // printf("Enter number of students: ");
     scanf("%d", &num_students);
     tot_conclusions_left = num_students;
 
@@ -56,7 +56,7 @@ void take_input()
 int main()
 {
     int i;
-    srand(time(0));
+    srand(time(NULL));
 
     //printf("Inside main\n");
     take_input();

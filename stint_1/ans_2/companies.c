@@ -13,7 +13,7 @@ void prep_stock(int id)
         if (tot_conclusions_left == 0)
         {
             //Comapny no longer wants to prepare vaccine if all students have reached a verdict
-            printf(ANSI_RED "BREAKING: Company exiting simulation as all students have reached verdicts\n" ANSI_RESET);
+            printf(ANSI_RED "Company %d exiting simulation as all students have reached verdicts\n" ANSI_RESET,id);
             break;
         }
 

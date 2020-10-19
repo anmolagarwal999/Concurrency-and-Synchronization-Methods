@@ -1,6 +1,5 @@
 #include "master_header.h"
 
-
 int get_min(int a, int b)
 {
     if (a < b)
@@ -65,6 +64,9 @@ void buy_batch_from_company(int id)
             //A batch has been bought from a company, now time to vaccinate
 
             invite_students(id);
+            
+            //added as adviced by TA
+            sleep(1);
         }
     }
 }
@@ -179,6 +181,9 @@ void vaccinate_students(int id, int filled_slots)
         printf(ANSI_MAGENTA "Student %d on Vaccination Zone %d has been vaccinated which has success probability %Lf\n" ANSI_RESET, hosp_ptr[id]->curr_served_students[i],
                id, comp_ptr[comp_partner_id]->prob_of_success);
         fflush(stdout);
+
+        //addition suggested by TA 
+        sleep(1);
 
         //No need to acquire lock as only hospital can change state
         stu_ptr[hosp_ptr[id]->curr_served_students[i]]->curr_stat = 2;

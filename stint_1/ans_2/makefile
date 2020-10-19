@@ -1,8 +1,8 @@
 CC = gcc
 # CFLAGS = -Wall -g -c
-CFLAGS = -Wall -Werror -g -c
+CFLAGS = -Wall -g -c
 LDFLAGS =
-OBJFILES = main.o companies.o students.o hospitals.o utils.o
+OBJFILES = q2.o companies.o students.o hospitals.o utils.o
 TARGET = a
 
 all:$(TARGET)
@@ -10,8 +10,8 @@ all:$(TARGET)
 $(TARGET): $(OBJFILES)
 	$(CC) -Wall -g $(OBJFILES) -lpthread -o $(TARGET) 
 
-main.o: main.c
-	$(CC) $(CFLAGS) main.c
+q2.o: q2.c
+	$(CC) $(CFLAGS) q2.c
 
 companies.o: companies.c
 	$(CC) $(CFLAGS) companies.c
