@@ -156,13 +156,25 @@ Musician is occupant | Singer is occupant
 ------------ | -------------
 Signals to resource of type 3 to allow potential duets with waiting singers.Waits for performance to get over. If a singer joins for a duel performance, extends time by 2 sec | Doesn't signal for a potential duel with a fellow singer as requirements mentioned in PDF prohibit 2 singers on stage at the same time
 
+```c=
+ if (perf_type == perf_s)
+    {
+        //do not invite any other singer for duel
 
-
-
-
-
-
-
+        printf(ANSI_GREEN "Singer %s is starting solo on stage id %d for time %d secs\n" ANSI_RESET, ptr->name, stage_id, ptr->perf_time);
+    }
+    else
+    {
+        printf(ANSI_RED "Musician %s is starting solo on stage id %d with instrument %c for time %d secs\n" ANSI_RESET, ptr->name, stage_id, ptr->instrument_id, ptr->perf_time);
+        pthread_mutex_lock(&st_ptr[stage_id]->mutex);
+        st_ptr[stage_id]->curr_stat = open_to_duel;
+        pthread_mutex_unlock(&st_ptr[stage_id]->mutex);
+        sem_post(&sem_filled_ae);
+    }
+```
+## Other implementation details
+* Timed wait on semaphore is used to keep track of when the performer should leave after starvation or lack of resources
+* I have used a **dummy rogue semaphore (a semaphore which is never signalled)** and have used the sem_timedwait() to synchronize arrival times of the helper threads belonging to the same performer. This would not have been possible using `sleep`  as sleep works in a relative sense whereas the dummy rogue semaphore works in an absolute sense when used along with the timespec struct.
 
 
 ## Assumptions
@@ -171,3 +183,4 @@ Signals to resource of type 3 to allow potential duets with waiting singers.Wait
 * Number of inputted stages and performers won't excced the timelimit
 * Non-negative time inputs are given
 * t2>=t1 as input
+* 

@@ -77,7 +77,7 @@ void take_input()
 int main()
 {
     int i;
-    //srand(time(0));
+    srand(time(0));
     take_input();
     // char inp_helper[100];
     tot_num_stages = num_stage_a + num_stage_e;
@@ -111,6 +111,17 @@ int main()
         st_ptr[i]->curr_stat = Unoccupied;
         pthread_mutex_init(&(st_ptr[i]->mutex), NULL);
     }
+
+    part2;
+    part2;
+    debug(tot_num_stages);
+    debug(tot_num_performers);
+    debug(num_coordinators);
+    debug(t1);
+    debug(t2);
+    debug(patience_time);
+    part2;
+    part2;
 
     //return 0;
 

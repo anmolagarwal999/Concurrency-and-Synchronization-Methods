@@ -12,7 +12,7 @@ There are 3 types of real-world entities-> vaccination zones (which I have inter
 I have made one thread for every instance of each of these real-world entities.
 
 ## Pharma companies
-The main function involved here is 'prep_stock'. Here, the company prepares batches after randomizing batch sizes, number of batches, preparation time etc. Once a manufacture term is completed, the company goes on to sleep on its own personal conditional variable. The company is woken only if one or more of its delivered batches is fully consumed by the students vaccinated in a particular vaccination zone. If this batch was the last batch to be consumed, then the company, then the comapny starts its next manufactring term, else it goes on to sleep again until all batches of its previous manufacturing team has been consumed. 
+The main function involved here is `prep_stock`. Here, the company prepares batches after randomizing batch sizes, number of batches, preparation time etc. Once a manufacture term is completed, **the company goes on to sleep on its own personal conditional variable**. The company is woken only if one or more of its delivered batches is fully consumed by the students vaccinated in a particular vaccination zone. If this batch was the last batch to be consumed, then the comapny starts its next manufacturing term, else it goes on to sleep again until all batches of its previous manufacturing team has been consumed. 
 (Implementation style by using conditional variables approved by TA on 17th Oct).
 
 ```c=
@@ -88,16 +88,16 @@ The student has the following possible statuses:
 * 1-> ongoing
 * 2-> successful vaccination (may or may not have developed antibodies)
 
-The student changes his status to waiting(0) and then keeps on busy waiting until the vaccination zone thread changes its status to vaccinated(2). Now, the student uses the success probability of the vaccination(based on the company which manufactured the vaccine) and after randomization, gets the verdict whether he has developed antibodies or not.
+The student changes his status to **waiting(0)** and then keeps on busy waiting until the vaccination zone thread changes its status to **vaccinated(2)**. Now, the student uses the success probability of the vaccination(based on the company which manufactured the vaccine) and after randomization, gets the verdict whether he/she has developed antibodies or not.
 * If he has developed antibodies the student exits the simulation.
-* If he hasn't developed antibodies,Student checks if he has used all 3 attempt:
+* If he hasn't developed antibodies,student checks if he has used all 3 attempts:
     * If yes, then the corresponding thread exits
-    * Otherwise, student changes his status back to 'waiting(0)' and starts busy waiting again.
+    * Otherwise, student changes his status back to '**waiting(0)**' and starts busy waiting again.
 
 ## Vaccination zones (interchangably used with term 'hospitals')
 
 > **Buying a batch of vaccines from a company**
-> The hospital tries to buy a batch from a company as long as all students haven't reached a conclusion. It iterates among all the companies until it finds a company which has an unsold batch. If it is able to find a batch, it buys it, decrements the batch from the company stock and now goes on to invite waiting students to come for vaccination.
+> The hospital tries to buy a batch from a company as long as all students haven't reached a conclusion.**It iterates among all the companies until it finds a company which has an unsold batch**. If it is able to find a batch, it buys it, decrements the batch from the company stock and now goes on to invite waiting students to come for vaccination.
 ```c=
 void buy_batch_from_company(int id)
 {
@@ -159,7 +159,7 @@ void buy_batch_from_company(int id)
 
 
 > **Inviting students to take part in its next vaccination phase**
-> In this function, the vaccination zones decides the number of students to allow in current vaccination phase and then keeps iterating through the students as long as its does not fulfill its current quota. However, if it discovers that no students are waiting, then it begins it's vaccination phase even if the quota partially filled.
+> In this function, the vaccination zones decides the number of students to allow in current vaccination phase and then keeps iterating through the students as long as its does not fulfill its current quota. However, if it discovers that no students are waiting, then it begins it's vaccination phase even if the quota is partially filled.
 
 
 ```c=
@@ -288,3 +288,4 @@ void vaccinate_students(int id, int filled_slots)
 * The constraint in pdf that at max 8 students(maybe lesser) can be vaccinated in a single vaccination phase by hospital will be adhered to.
 * The number of vaccination zones, students or companies won't exceed 500
 * I have induced a hardcoded 1 sec gap between vaccine batch being ordered and it being delivered
+* The pharma companies will resume vaccine production only after the consumption(and not 'sale') of all its current baches. So if a case arises where the total number of vaccine batches produced by all the companies is less than 'm', the vaccination zones remain wothout a batch even though there is a company which is idle at the moment.
