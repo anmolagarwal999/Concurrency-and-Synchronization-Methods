@@ -1,16 +1,5 @@
 #include "master_header.h"
 
-// struct hospital
-// {
-//
-//     int partner_company; //comapany whose batch currently using
-//     int tot_vaccines;    //tot vaccines stocked
-//     int left_vaccines;   //vaccines left in current stock
-//     int curr_slots;      //current number of doctors present to administer the vaccine
-//     int left_slots;      //doctors waiting for patient
-//     pthread_mutex_t mutex;
-//     int curr_served_students[10]; //ids of students part of current vaccination phase
-// };
 
 int get_min(int a, int b)
 {
@@ -42,7 +31,7 @@ void buy_batch_from_company(int id)
                 if (pthread_mutex_trylock(&(comp_ptr[curr_check_id]->mutex)) != 0)
                 {
                     //EBUSY  The mutex could not be acquired because it was already locked.
-                   // printf("Company with id %d is busy deciding transit changes, hence did not answer call from centre %d\n", curr_check_id, id);
+                    // printf("Company with id %d is busy deciding transit changes, hence did not answer call from centre %d\n", curr_check_id, id);
                 }
                 else
                 {
@@ -82,7 +71,7 @@ void buy_batch_from_company(int id)
 
 void invite_students(int id)
 {
-    printf(ANSI_CYAN"Pharmaceutical Company %d has delivered vaccines to Vaccination zone %d, resuming vaccinations now\n"ANSI_RESET,hosp_ptr[id]->partner_company,id);
+    printf(ANSI_CYAN "Pharmaceutical Company %d has delivered vaccines to Vaccination zone %d, resuming vaccinations now\n" ANSI_RESET, hosp_ptr[id]->partner_company, id);
     sleep(1);
     printf(ANSI_CYAN "Vaccination Zone %d is ready to vaccinate with %d slots\n" ANSI_RESET, id, hosp_ptr[id]->left_vaccines);
     //on entering this function, hospital obviously has some number of new vaccines
@@ -100,7 +89,8 @@ void invite_students(int id)
         // int curr_slots = get_random_int(1, up_lim);
         int curr_slots = get_random_int2(1, up_lim, "in invite students");
         int filled_slots = 0;
-        int curr_stu_id = 0;
+        //precuation
+        int curr_stu_id = get_random_int(0, num_students - 1) % num_students;
         for (int j = 0; j < 10; j++)
         {
             hosp_ptr[id]->curr_served_students[j] = -1;
@@ -118,7 +108,7 @@ void invite_students(int id)
             if (pthread_mutex_trylock(&(stu_ptr[curr_stu_id]->mutex)) != 0)
             {
                 //EBUSY  The mutex could not be acquired because it was already locked.
-               // printf("Student id is busy as is currently in contact with another hospital, hence did not answer call\n");
+                // printf("Student id is busy as is currently in contact with another hospital, hence did not answer call\n");
             }
             else
             {
@@ -178,8 +168,11 @@ void vaccinate_students(int id, int filled_slots)
     //PRINT ENTERING VACCINATION PHASE AND vaccinating students
     //--------------------------------------------------------------
     //Minor sleep to mention moodle requirements to make code more life-like
-    printf(BCYN "Vaccination zone %d entering vaccination phase\n" ANSI_RESET, id);
-    sleep(1);
+    if (filled_slots != 0)
+    {
+        printf(BCYN "Vaccination zone %d entering vaccination phase\n" ANSI_RESET, id);
+        sleep(1);
+    }
 
     for (int i = 0; i < filled_slots; i++)
     {

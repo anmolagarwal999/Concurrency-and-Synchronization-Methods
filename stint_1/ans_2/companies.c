@@ -7,13 +7,13 @@
 
 void prep_stock(int id)
 {
-    printf("inside prep stock function\n");
+    //printf("inside prep stock function\n");
     while (true)
     {
         if (tot_conclusions_left == 0)
         {
             //Comapny no longer wants to prepare vaccine if all students have reached a verdict
-            printf(ANSI_RED "BREAKING PEGASUS: Comapany exiting as all students have reached verdicts\n" ANSI_RESET);
+            printf(ANSI_RED "BREAKING: Company exiting simulation as all students have reached verdicts\n" ANSI_RESET);
             break;
         }
 
@@ -51,13 +51,13 @@ void dispatch_stock(int id)
     int flag = 0;
     while (comp_ptr[id]->done_batches < comp_ptr[id]->curr_batches_num)
     {
-        printf(ANSI_MAGENTA "Company with id %d is SLEEP \n" ANSI_RESET, id);
+       // printf(ANSI_MAGENTA "Company with id %d is SLEEP \n" ANSI_RESET, id);
         pthread_cond_wait(&(comp_ptr[id]->cv), &(comp_ptr[id]->mutex));
-        printf("I HAVE COME OUT OF CONDITIONAL WAIT\n");
-        fflush(stdout);
+       // printf("I HAVE COME OUT OF CONDITIONAL WAIT\n");
+       // fflush(stdout);
         if (tot_conclusions_left <= 0)
         {
-            printf(ANSI_CYAN "All students' have been tended to\n" ANSI_RESET);
+            //printf(ANSI_CYAN "All students' have been tended to\n" ANSI_RESET);
             flag = 1;
             break;
         }

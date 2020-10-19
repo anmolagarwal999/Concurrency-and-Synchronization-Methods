@@ -3,7 +3,7 @@
 int num_hospitals;
 int num_companies;
 int num_students;
-int latest_arrival_permitted = 15;
+int latest_arrival_permitted = 30;
 int tot_conclusions_left;
 int hopeful_students_num;
 pthread_mutex_t conclusions_mutex;
@@ -80,7 +80,7 @@ int main()
         comp_ptr[i]->thr_id = pthread_create(&(comp_ptr[i]->thread_obj), NULL, init_company, (void *)(&(comp_ptr[i]->id)));
     }
 
-    printf("Input with companies taken\n");
+   // printf("Input with companies taken\n");
 
     //intialize students
     for (i = 0; i < num_students; i++)
@@ -93,8 +93,8 @@ int main()
         stu_ptr[i]->thr_id = pthread_create(&(stu_ptr[i]->thread_obj), NULL, init_student, (void *)(&(stu_ptr[i]->id)));
     }
 
-    printf("Creating hospital threads\n");
-    fflush(stdout);
+    // printf("Creating hospital threads\n");
+    // fflush(stdout);
     //initialize hospitals
     for (i = 0; i < num_hospitals; i++)
     {
@@ -110,21 +110,21 @@ int main()
         pthread_join(stu_ptr[i]->thread_obj, NULL);
     }
 
-    printf("STUDENTS HAVE JOINED\n");
-    fflush(stdout);
+    // printf("STUDENTS HAVE JOINED\n");
+    // fflush(stdout);
 
     for (int i = 0; i < num_companies; i++)
     {
-        printf("Waking comp with id %d\n", i);
+        //printf("Waking comp with id %d\n", i);
         pthread_mutex_lock(&(comp_ptr[i]->mutex));
         pthread_cond_signal(&(comp_ptr[i]->cv));
         pthread_mutex_unlock(&(comp_ptr[i]->mutex));
         pthread_join(comp_ptr[i]->thread_obj, NULL);
-        printf("comp with id TERMINATED%d\n", i);
+       // printf("comp with id TERMINATED%d\n", i);
     }
 
-    printf("COMPANIES HAVE JOINED\n");
-    fflush(stdout);
+    // printf("COMPANIES HAVE JOINED\n");
+    // fflush(stdout);
 
     for (int i = 0; i < num_hospitals; i++)
     {
@@ -132,8 +132,8 @@ int main()
         pthread_join(hosp_ptr[i]->thread_obj, NULL);
     }
 
-    printf("HOSPITALS HAVE JOINED\n");
-    fflush(stdout);
+    // printf("HOSPITALS HAVE JOINED\n");
+    // fflush(stdout);
 
     printf(BMAG "Simulation Over\n" ANSI_RESET);
     fflush(stdout);

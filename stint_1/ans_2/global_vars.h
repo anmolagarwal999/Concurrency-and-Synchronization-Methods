@@ -40,7 +40,7 @@ struct company
     int id; //Company id
     int thr_id;
     int curr_batches_num; //batches produced in the last manufacture stint
-    int left_batches_num;  //batches yet to be gully consumed
+    int left_batches_num;  //batches yet to be sold
     int done_batches;  //batches which have been fully consumed
     int capacity_of_batches;  //number of vaccines in each batch of the current manufacture stint
     long double prob_of_success;
