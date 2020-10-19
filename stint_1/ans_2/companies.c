@@ -71,9 +71,9 @@ void *init_company(void *ptr)
 
     int id = *((int *)ptr);
     printf(ANSI_YELLOW "Pharma Company %d\t HAS entered the simulation\n" ANSI_RESET, id);
-    comp_ptr[id]->capacity_of_batches = 0;
-    comp_ptr[id]->curr_batches_num = 0;
-    comp_ptr[id]->left_batches_num = 0;
+    // comp_ptr[id]->capacity_of_batches = 0;
+    // comp_ptr[id]->curr_batches_num = 0;
+    // comp_ptr[id]->left_batches_num = 0;
 
     prep_stock(id);
 

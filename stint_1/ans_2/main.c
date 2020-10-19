@@ -39,6 +39,9 @@ int main()
 
         comp_ptr[i] = (struct company *)malloc(sizeof(struct company));
         scanf("%Lf", &comp_ptr[i]->prob_of_success);
+        comp_ptr[i]->capacity_of_batches = 0;
+        comp_ptr[i]->curr_batches_num = 0;
+        comp_ptr[i]->left_batches_num = 0;
         pthread_mutex_init(&(comp_ptr[i]->mutex), NULL);
         pthread_cond_init(&(comp_ptr[i]->cv), NULL);
 
@@ -67,8 +70,7 @@ int main()
     //initialize hospitals
     for (i = 0; i < num_hospitals; i++)
     {
-  
-       
+
         hosp_ptr[i] = (struct hospital *)malloc(sizeof(struct hospital));
         hosp_ptr[i]->id = i;
         //continue;
