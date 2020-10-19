@@ -142,9 +142,9 @@ The code which creates and uses threads for a particular type of performer is as
 
 ## Mechanism of waiting on a stage and trying to occupy it
 The helper threads for a particular performer try to get their respective resource types for the performer. They wait on their respective resource semaphores. If they get a chance to occupy a stage, they follow the following procedure (mentioned briefly, see code for specifics):
- 1. Acquire performer lock to make sure that other sibling helper threads do not change the status of the performer in between
- 2. Check if the performer is still waiting and if this is the case, change performer status and assign the stage to him
- 3. If the performer is no loner waiting, this means he is either performing on a stage secured to it by a sibling helper thread  or he has already left after performing on a stage secured for it by another sibling thread. If this is the case, the line of action for current thread is to resignal the semaphore to increment its value as it no longer needs to secure the stage which was meant to be allocated to it.
+ 1. **Acquire performer lock** to make sure that other sibling helper threads do not change the status of the performer in between
+ 2. **Check if the performer is still waiting** and if this is the case, change performer status and assign the stage to him
+ 3. If the performer is no longer waiting, this means he is either performing on a stage secured to it by a sibling helper thread  or he has already left after performing on a stage secured for it by another sibling thread. If this is the case, the line of action for current thread is to **resignal the semaphore to increment its value** as it no longer needs to secure the stage which was meant to be allocated to it.
 
 4. Release performer lock
 
@@ -183,4 +183,3 @@ Signals to resource of type 3 to allow potential duets with waiting singers.Wait
 * Number of inputted stages and performers won't excced the timelimit
 * Non-negative time inputs are given
 * t2>=t1 as input
-* 
