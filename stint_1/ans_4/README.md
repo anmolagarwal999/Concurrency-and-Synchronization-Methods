@@ -1,5 +1,7 @@
 # Q3: Music mayhem
+- Anmol Agarwal,2019101068
 
+NOTE: Bonus has been implemented
 
 ## Running the program
 
@@ -183,3 +185,4 @@ Signals to resource of type 3 to allow potential duets with waiting singers.Wait
 * Number of inputted stages and performers won't excced the timelimit
 * Non-negative time inputs are given
 * t2>=t1 as input
+* **I have assumed that number of coordinators cannot be zero.**

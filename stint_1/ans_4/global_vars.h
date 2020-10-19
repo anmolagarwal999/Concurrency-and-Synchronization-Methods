@@ -34,6 +34,15 @@
 #define BCYN "\e[1;36m"
 #define BWHT "\e[1;37m"
 
+//https://stackoverflow.com/a/1088667/6427607
+
+struct st_print
+{
+    char name[2][16];
+};
+
+extern struct st_print *st_print_ptr;
+
 
 enum performer_types
 {
@@ -52,8 +61,8 @@ enum stage_statuses
 
 enum stage_types
 {
-    TYPE_A,
-    TYPE_E
+    TYPE_A=0,
+    TYPE_E=1
 };
 
 #define stage_type_a 1

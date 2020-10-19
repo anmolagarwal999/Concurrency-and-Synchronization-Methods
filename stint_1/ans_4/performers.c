@@ -348,7 +348,7 @@ block3:
 
                     int leader_id = st_ptr[i]->perf_id1;
                     perf_ptr[leader_id]->curr_stat = Performing_duel;
-                    printf(ANSI_BLUE "Singer %s is starting DUEL on stage id %d with %s\n" ANSI_RESET, ptr->name, st_ptr[i]->stage_id, perf_ptr[leader_id]->name);
+                    printf(ANSI_BLUE "Singer %s is starting DUEL with %s on stage id %d %s\n" ANSI_RESET, ptr->name,perf_ptr[leader_id]->name, st_ptr[i]->stage_id,st_print_ptr->name[st_ptr[i]->type] );
                 }
 
                 pthread_mutex_unlock(&ptr->mutex);
@@ -394,11 +394,11 @@ void give_leader_performance(int id)
         //do not invite any other singer for duel
 
         //printf("SOLO SINGER TIME IS %d\n", perf_ptr[id]->perf_time);
-        printf(ANSI_GREEN "Singer %s is starting solo on stage id %d for time %d secs\n" ANSI_RESET, ptr->name, stage_id, ptr->perf_time);
+        printf(ANSI_GREEN "Singer %s is starting solo on stage id %d %s for time %d secs\n" ANSI_RESET, ptr->name, stage_id, st_print_ptr->name[st_ptr[stage_id]->type], ptr->perf_time);
     }
     else
     {
-        printf(ANSI_RED "Musician %s is starting solo on stage id %d with instrument %c for time %d secs\n" ANSI_RESET, ptr->name, stage_id, ptr->instrument_id, ptr->perf_time);
+        printf(ANSI_RED "Musician %s is starting solo on stage id %d %s with instrument %c for time %d secs\n" ANSI_RESET, ptr->name, stage_id, st_print_ptr->name[st_ptr[stage_id]->type], ptr->instrument_id, ptr->perf_time);
         pthread_mutex_lock(&st_ptr[stage_id]->mutex);
         st_ptr[stage_id]->curr_stat = open_to_duel;
         pthread_mutex_unlock(&st_ptr[stage_id]->mutex);
@@ -425,12 +425,15 @@ void give_leader_performance(int id)
 
     //change status of one/two performers and display apt messages
     pthread_mutex_lock(&perf_ptr[leader_id]->mutex);
+    printf(BGRN "Performer %s has ended his/her performance on stage id %d %s\n" ANSI_RESET, perf_ptr[leader_id]->name, stage_id, st_print_ptr->name[st_ptr[stage_id]->type]);
     perf_ptr[leader_id]->curr_stat = Wait_for_shirt;
     pthread_mutex_unlock(&perf_ptr[leader_id]->mutex);
 
     if (follower_id != -1)
     {
         pthread_mutex_lock(&perf_ptr[follower_id]->mutex);
+        printf(BGRN "Performer %s has ended his/her DUEL performance on stage id %d %s\n" ANSI_RESET, perf_ptr[follower_id]->name, stage_id, st_print_ptr->name[st_ptr[stage_id]->type]);
+
         perf_ptr[follower_id]->curr_stat = Wait_for_shirt;
         pthread_mutex_unlock(&perf_ptr[follower_id]->mutex);
     }

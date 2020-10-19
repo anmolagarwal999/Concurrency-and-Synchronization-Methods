@@ -1,0 +1,169 @@
+8 0 3 3 10 20 10
+A1 v 5
+A2 v 6
+A3 v 10
+E1 b 1
+E2 b 7
+E3 b 13
+S1 s 2
+S2 s 13
+
+8 0 3 3 10 20 5
+A1 v 5
+A2 v 6
+A3 v 10
+E1 b 1
+E2 b 7
+E3 b 13
+S1 s 2
+S2 s 13
+
+
+4 0 2 2 15 20 5
+E1 b 0
+E2 b 1
+S1 s 5
+S2 s 7
+
+10 3 3 1 10 15 10
+A1 v 0
+A2 v 2
+A3 v 30
+E1 b 30
+E2 b 2
+E3 b 2
+AE1 p 0
+AE2 g 15
+S1 s 1
+S2 s 2
+
+5 1 1 4 2 10 5
+Tanvi p 0
+Sudh b 1
+Manas g 0
+Sriya v 1
+Pahun s 1
+
+5 1 1 4 1 1 5
+Tanvi p 0
+Sudh b 1
+Manas g 0
+Sriya v 1
+Pahun s 1
+
+10 1 1 4 2 10 5
+Tanvi p 0
+Sudh b 1
+Manas g 0
+Sriya v 1
+Pahun s 1
+Tanvi_2 p 0
+Sudh_2 b 1
+Manas_2 g 0
+Sriya_2 v 1
+Pahun_2 s 1
+
+10 1 1 4 2 10 8
+Tanvi p 10
+Sudh b 1
+Manas g 5
+Sriya v 1
+Pahun s 15
+Tanvi_2 p 0
+Sudh_2 b 1
+Manas_2 g 0
+Sriya_2 v 1
+Pahun_2 s 2
+
+1 1 1 4 2 7 1
+Abhinav b 3
+
+5 0 0 4 1 1 5
+Tanvi p 0
+Sudh b 1
+Manas g 0
+Sriya v 1
+Pahun s 1
+
+3 1 1 1 5 10 3
+A v 1
+AE g 1
+S s 3
+
+3 1 1 1 5 10 3
+A v 2
+AE g 0
+S s 3
+
+3 1 1 1 5 10 3
+A v 2
+AE g 0
+S s 6
+
+3 2 1 1 5 10 3
+A v 2
+AE g 0
+S s 6
+
+2 1 0 1 10 10 2
+S1 s 1
+S2 s 1
+
+2 1 0 1 10 10 2
+A1 g 1
+S2 s 1
+
+
+50 3 3 1 10 15 40
+Tanvi s 0
+Sudh s 1
+Manas s 0
+Sriya v 47
+Pahun s 23
+Tanvi s 0
+Sudh b 1
+Manas g 0
+Sriya v 14
+Pahun s 1
+Tanvi s 30
+Sudh s 1
+Manas s 0
+Sriya s 13
+Pahun s 1
+Tanvi p 0
+Sudh b 33
+Manas g 0
+Sriya v 1
+Pahun s 1
+Tanvi p 0
+Sudh b 1
+Manas g 0
+Sriya v 1
+Pahun s 2
+Tanvi p 0
+Sudh b 1
+Manas g 0
+Sriya v 47
+Pahun s 23
+Tanvi p 0
+Sudh b 1
+Manas g 0
+Sriya v 14
+Pahun s 1
+Tanvi p 30
+Sudh b 1
+Manas g 0
+Sriya v 12
+Pahun s 1
+Tanvi p 0
+Sudh b 33
+Manas g 0
+Sriya v 1
+Pahun s 1
+Tanvi p 0
+Sudh b 1
+Manas g 0
+Sriya v 1
+Pahun s 2
+
+

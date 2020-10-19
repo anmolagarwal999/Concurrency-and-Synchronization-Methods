@@ -9,11 +9,11 @@ int num_coordinators;
 sem_t sem_empty_a, sem_empty_e, sem_filled_ae;
 sem_t sem_coordinators, sem_tshirt_givers, rogue_sem;
 
+struct st_print *st_print_ptr;
+
 int get_performer_type(char ch)
 {
-    // part;
-    // printf("char input is %c\n", ch);
-    // part;
+   
     switch (ch)
     {
     case 'p':
@@ -33,33 +33,33 @@ int get_performer_type(char ch)
 
 void take_input()
 {
-    printf("Enter number of performers:");
+    //printf("Enter number of performers:");
     scanf("%d", &tot_num_performers);
     fflush(stdout);
 
-   // printf(ANSI_RED "REACHED HERE" ANSI_RESET);
+    // printf(ANSI_RED "REACHED HERE" ANSI_RESET);
 
-    printf("Enter number of acoustic stages: ");
+    //printf("Enter number of acoustic stages: ");
     scanf("%d", &num_stage_a);
     fflush(stdout);
 
-    printf("Enter number of electric stages: ");
+    //printf("Enter number of electric stages: ");
     scanf("%d", &num_stage_e);
     fflush(stdout);
 
-    printf("Enter number of coordinators: ");
+    // printf("Enter number of coordinators: ");
     scanf("%d", &num_coordinators);
     fflush(stdout);
 
-    printf("Enter min_performance_time: ");
+    //printf("Enter min_performance_time: ");
     scanf("%d", &t1);
     fflush(stdout);
 
-    printf("Enter max_performance_time: ");
+    //printf("Enter max_performance_time: ");
     scanf("%d", &t2);
     fflush(stdout);
 
-    printf("Enter MAX WAITING TIME: ");
+    // printf("Enter MAX WAITING TIME: ");
     scanf("%d", &patience_time);
 
     nump_a = 0, nump_e = 0, nump_ae = 0, nump_s = 0;
@@ -72,6 +72,11 @@ void take_input()
     sem_init(&rogue_sem, 0, 0);
 
     sem_init(&sem_tshirt_givers, 0, (unsigned int)(num_coordinators));
+    if(num_coordinators==0)
+    {
+        printf(BCYN"Music show cannot be hosted without any coordinator present :(\n"ANSI_RESET);
+        exit(0);
+    }
 }
 
 int main()
@@ -79,21 +84,14 @@ int main()
     int i;
     srand(time(0));
     take_input();
-    // char inp_helper[100];
+    st_print_ptr=(struct st_print *)malloc(sizeof(struct st_print));
+
+    strcpy(st_print_ptr->name[0], "[Acoustic]\0");
+    strcpy(st_print_ptr->name[1], "[Electric]\0");
     tot_num_stages = num_stage_a + num_stage_e;
     for (i = 0; i < tot_num_stages; i++)
     {
 
-        // enum stage_statuses
-        // {
-        //     Unoccupied,
-        //     one_musician,
-        //     one_singer,
-        //     two_folks
-        // };
-        // printf("Taking stage stuff\n");
-       // debug(i);
-        //fflush(stdout);
         st_ptr[i] = (struct stage *)malloc(sizeof(struct stage));
 
         st_ptr[i]->stage_id = i;
@@ -112,21 +110,21 @@ int main()
         pthread_mutex_init(&(st_ptr[i]->mutex), NULL);
     }
 
-    part2;
-    part2;
-    debug(tot_num_stages);
-    debug(tot_num_performers);
-    debug(num_coordinators);
-    debug(t1);
-    debug(t2);
-    debug(patience_time);
-    part2;
-    part2;
+    // part2;
+    // part2;
+    // debug(tot_num_stages);
+    // debug(tot_num_performers);
+    // debug(num_coordinators);
+    // debug(t1);
+    // debug(t2);
+    // debug(patience_time);
+    // part2;
+    // part2;
 
     //return 0;
 
-    printf("Enter details in just one line in format <one-word-name> <instrument> <Arrival time>\n");
-    printf("Enter details of performers\n");
+    // printf("Enter details in just one line in format <one-word-name> <instrument> <Arrival time>\n");
+    // printf("Enter details of performers\n");
 
     for (i = 0; i < tot_num_performers; i++)
     {
@@ -174,9 +172,9 @@ int main()
         pthread_mutex_init(&(perf_ptr[i]->mutex), NULL);
         perf_ptr[i]->perf_time = get_random_int2(t1, t2, "Gotham City");
         // dispatch_performers(i);
-      //  part;
+        //  part;
     }
-    printf(BGRN"Inputs taken . Simulation starting\n"ANSI_RESET);
+    printf(BGRN "Inputs taken . Simulation starting\n" ANSI_RESET);
     for (i = 0; i < tot_num_performers; i++)
     {
         dispatch_performers(i);
