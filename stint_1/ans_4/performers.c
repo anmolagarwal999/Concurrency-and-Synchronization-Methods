@@ -21,7 +21,7 @@ void collect_tshirt(int id)
     pthread_mutex_lock(&perf_ptr[id]->mutex);
     perf_ptr[id]->curr_stat = Collecting_shirt;
     pthread_mutex_unlock(&perf_ptr[id]->mutex);
-    printf(ANSI_MAGENTA "Performer with name %s collecting tshirt\n" ANSI_RESET, perf_ptr[id]->name);
+    printf(BMAG "Performer with name %s collecting tshirt\n" ANSI_RESET, perf_ptr[id]->name);
     sleep(2);
     pthread_mutex_lock(&perf_ptr[id]->mutex);
     perf_ptr[id]->curr_stat = Left_show;
@@ -124,7 +124,7 @@ block1:
         if (ptr->curr_stat == Waiting)
         {
             ptr->curr_stat = Left_show;
-            printf(ANSI_CYAN "Performer %s became impatient and left the show" ANSI_RESET);
+            printf(BCYN "Performer %s became impatient and left the show" ANSI_RESET);
         }
         //if not, then either some other thread got a stage for performer or the other thread already left
         //nothing to be done, just leave
@@ -239,7 +239,7 @@ block2:
         if (ptr->curr_stat == Waiting)
         {
             ptr->curr_stat = Left_show;
-            printf(ANSI_CYAN "Performer %s became impatient and left the show" ANSI_RESET);
+            printf(BCYN "Performer %s became impatient and left the show" ANSI_RESET);
         }
         //if not, then either some other thread got a stage for performer or the other thread already left
         //nothing to be done, just leave
@@ -346,7 +346,7 @@ block3:
         if (ptr->curr_stat == Waiting)
         {
             ptr->curr_stat = Left_show;
-            printf(ANSI_CYAN "Performer %s became impatient and left the show" ANSI_RESET);
+            printf(BCYN "Performer %s became impatient and left the show" ANSI_RESET);
         }
         //if not, then either some other thread got a stage for performer or the other thread already left
         //nothing to be done, just leave
