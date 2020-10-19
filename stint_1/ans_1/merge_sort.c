@@ -32,7 +32,7 @@ struct thread_data
     int *ptr_to_arr;
     int l, r;
 };
-
+int shm_id;
 ////////////////////////////////////////////////////////
 void swap_elems(int *a, int *b)
 {
@@ -50,9 +50,10 @@ int *get_shared_mem(size_t sz)
     /*If a client wants to use a shared memory created with IPC_PRIVATE, 
     it must be a child process of the server, created after the parent
     has obtained the shared memory, so that the private key value can be passed to the child when it is created. */
-
+    printf("Size requested is %ld\n", sz);
+    //exit(0);
     key_t mem_key = IPC_PRIVATE;
-    int shm_id = shmget(mem_key, sz, IPC_CREAT | 0666);
+    shm_id = shmget(mem_key, sz, IPC_CREAT | 0666);
     if (shm_id < 0)
     {
         perror(" shmget error >");
@@ -66,21 +67,22 @@ int *get_shared_mem(size_t sz)
     if (shm_ptr == (void *)(-1))
     {
         perror(" shmat error ");
+
         exit(1);
     }
 
     return shm_ptr;
 }
 
-void merge_halves(int arr[], LL l, LL m, LL r)
+void merge_halves(int *arr, int l, int m, int r)
 {
-    LL i, j, k;
+    int i, j, k;
 
     //l to m
-    LL sz1 = m - l + 1;
+    int sz1 = m - l + 1;
 
     //m+1 to r
-    LL sz2 = r - m;
+    int sz2 = r - m;
 
     int left_arr[sz1], right_arr[sz2];
 
@@ -127,12 +129,12 @@ void merge_halves(int arr[], LL l, LL m, LL r)
     }
 }
 
-void merge_sort(int arr[], int l, int r)
+void merge_sort(int *arr, int l, int r)
 {
     if (l < r)
     {
         //printf("l is %d and r is %d\n", l, r);
-        LL sz = r - l + 1;
+        int sz = r - l + 1;
 
         if (sz < 5)
         {
@@ -162,7 +164,7 @@ void merge_sort(int arr[], int l, int r)
             return;
         }
 
-        LL m = l + (r - l) / 2;
+        int m = l + (r - l) / 2;
 
         merge_sort(arr, l, m);
         merge_sort(arr, m + 1, r);
@@ -180,7 +182,7 @@ void *threaded_merge_sort(void *args)
     if (l < r)
     {
         //printf("l is %d and r is %d\n", l, r);
-        LL sz = r - l + 1;
+        int sz = r - l + 1;
 
         if (sz < 5)
         {
@@ -211,8 +213,9 @@ void *threaded_merge_sort(void *args)
         }
         else
         {
-
-            LL m = l + (r - l) / 2;
+            // printf(BRED "In threaded merge sort\n");
+            // exit(-1);
+            int m = l + (r - l) / 2;
             pthread_t tid1, tid2;
 
             struct thread_data a1;
@@ -244,7 +247,7 @@ void process_merge_sort(int *shared_arr, int l, int r)
     if (l < r)
     {
         //As long as array size is not one
-        LL sz = r - l + 1;
+        int sz = r - l + 1;
 
         if (sz < 5)
         {
@@ -276,7 +279,7 @@ void process_merge_sort(int *shared_arr, int l, int r)
         else
         {
 
-            LL m = l + (r - l) / 2;
+            int m = l + (r - l) / 2;
 
             int pid1, pid2;
 
@@ -329,40 +332,52 @@ void print_arr(int *a, int n)
     printf("\n");
 }
 
-void copy_arr(int *arr, int *send_arr, LL n)
+void copy_arr(int *arr, int *send_arr, int n, int id)
 {
     for (int i = 0; i < n; i++)
     {
+        printf("i is %d and id is %d\n", i, id);
         send_arr[i] = arr[i];
     }
 }
-
+int get_random_int(int lower, int upper)
+{
+    int num = (rand() % (upper - lower + 1)) + lower;
+    return num;
+}
 int main()
 {
-    LL n;
+    int n;
     printf("Enter value of n\n");
-    scanf("%lld", &n);
+    scanf("%d", &n);
+    // n=5000;
     /////////////////////////////////////////////////////////////
     //for process merge sort
-    int *shared_arr = get_shared_mem(n + 1);
+    int *shared_arr = get_shared_mem((n + 1) * sizeof(int));
+
+    printf("size allotted is %ld\n", sizeof(shared_arr));
+    //  return 0;
 
     //original array
     org_arr = (int *)malloc(sizeof(int) * n);
 
     //making copy for threaded merge sort
-    thread_arr = (int *)malloc(sizeof(int) * n);
+    thread_arr = (int *)malloc(sizeof(int) * (n + 1));
 
     //////////////////////////////////////////////////////////////
 
     int arr_size = n;
+
     printf("Input n elements\n");
     for (int i = 0; i < n; i++)
     {
-        scanf("%d", &org_arr[i]);
+        //scanf("%d", &org_arr[i]);
+        // printf("i is %d\n",i);
+        org_arr[i] = get_random_int(1, 10000);
     }
     ///////////////////////////////////////////////////////////////
-    copy_arr(org_arr, shared_arr, n);
-    copy_arr(org_arr, thread_arr, n);
+    copy_arr(org_arr, shared_arr, n, 1);
+    copy_arr(org_arr, thread_arr, n, 2);
     //////////////////////////////////////////////////////////////////
     long double st, en;
     ////////////////////////////////////////////////////////////////////
@@ -371,10 +386,11 @@ int main()
     part;
     printf("Before concurrent merge sort, contents are\n");
     print_arr(shared_arr, n);
-    printf("Running concurrent_mergesort for n = %lld\n", n);
+    printf("Running concurrent_mergesort for n = %d\n", n);
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     st = ts.tv_nsec / (1e9) + ts.tv_sec;
+    printf("%lld.%.9ld\n", (long long)ts.tv_sec, ts.tv_nsec);
 
     process_merge_sort(shared_arr, 0, n - 1);
     printf("After concurrent merge sort, contents are\n");
@@ -382,19 +398,35 @@ int main()
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     en = ts.tv_nsec / (1e9) + ts.tv_sec;
+    printf("%lld.%.9ld\n", (long long)ts.tv_sec, ts.tv_nsec);
+
     long double t1 = en - st;
     printf("time taken = %Lf seconds\n", t1);
     part;
+
+    // Detach Shared Memory
+    if (shmdt(shared_arr) == -1)
+    {
+        perror("shmdt");
+        exit(1);
+    }
+    if (shmctl(shm_id, IPC_RMID, NULL) == -1)
+    {
+        perror("shmctl");
+        exit(1);
+    }
     ///////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
     //Threaded MERGE SORT
     part;
     printf("Before THREADED merge sort, contents are\n");
     print_arr(thread_arr, n);
-    printf("Running THREADED_mergesort for n = %lld\n", n);
+    printf("Running THREADED_mergesort for n = %d\n", n);
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     st = ts.tv_nsec / (1e9) + ts.tv_sec;
+    printf("%lld.%.9ld\n", (long long)ts.tv_sec, ts.tv_nsec);
+
     struct thread_data send_data;
     send_data.l = 0;
     send_data.r = n - 1;
@@ -406,6 +438,8 @@ int main()
     print_arr(thread_arr, n);
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     en = ts.tv_nsec / (1e9) + ts.tv_sec;
+    printf("%lld.%.9ld\n", (long long)ts.tv_sec, ts.tv_nsec);
+
     long double t2 = en - st;
     printf("time taken = %Lf\n", t2);
     part;
@@ -416,15 +450,19 @@ int main()
     part;
     printf("Before NORMAL merge sort, contents are\n");
     print_arr(org_arr, n);
-    printf("Running NORMAL_mergesort for n = %lld\n", n);
+    printf("Running NORMAL_mergesort for n = %d\n", n);
 
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     st = ts.tv_nsec / (1e9) + ts.tv_sec;
+    printf("%lld.%.9ld\n", (long long)ts.tv_sec, ts.tv_nsec);
+
     merge_sort(org_arr, 0, n - 1);
     printf("After NORMAL merge sort, contents are\n");
     print_arr(org_arr, n);
     clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
     en = ts.tv_nsec / (1e9) + ts.tv_sec;
+    printf("%lld.%.9ld\n", (long long)ts.tv_sec, ts.tv_nsec);
+
     long double t3 = en - st;
     printf("time taken = %Lf\n", t3);
     part;

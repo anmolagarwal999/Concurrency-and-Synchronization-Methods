@@ -1,4 +1,5 @@
 CC = gcc
+# CFLAGS = -Wall -g -c
 CFLAGS = -Wall -Werror -g -c
 LDFLAGS =
 OBJFILES = main.o companies.o students.o hospitals.o utils.o

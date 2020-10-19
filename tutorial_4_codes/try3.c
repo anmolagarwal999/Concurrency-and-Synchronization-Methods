@@ -1,36 +1,34 @@
 void a_musician()
 {
-    sem_wait(sem2);
-    [
+ap:
+    sem_wait(sem_a);
+    {
 
-        //GOT
-        nothing to do
-
-
-        //FAIL
-        nothing to do
-    ]
-
+        ret = sem_try_wait(tot);
+        if (ret = SUCCESS)
+        {
+            assign_STAGE
+        }
+        else
+        {
+            goto ap;
+        }
+    }
 }
 
-
-
-void (ae)_umusician()
+void(ae) musician()
 {
-    sem_wait(sem1);
-
-    //got
-    electrical 
-    acq
-
-
-
-
-    ///fail
-
-
+    sem_wait(sem_tot);
+    ret2 = sem_try_wait(sem_a);
+    if (ret = SUCCESS)
+    {
+        assign_STAGE
+    }
+    else
+    {
+        ret3 = sem_try_wait(e);
+    }
 }
-
 
 //for all-1 -> free-acqu+free--electr
 //for ac-2 -. free acq
@@ -40,10 +38,7 @@ void (ae)_umusician()
 void acquostic()
 {
 
-
-
     //done with previous performance
-
 
     signal_sem(sem2);
     signal_sem(sem1);
@@ -52,7 +47,7 @@ void acquostic()
 
 void electrcic()
 {
-     signal_sem(sem3);
+    signal_sem(sem3);
     signal_sem(sem1);
-    signal_sem(sem4)
+    signal_sem(sem4);
 }
