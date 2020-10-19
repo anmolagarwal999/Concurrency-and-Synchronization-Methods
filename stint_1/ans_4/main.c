@@ -7,7 +7,7 @@ int num_stage_a, num_stage_e;
 int tot_num_stages;
 int num_coordinators;
 sem_t sem_empty_a, sem_empty_e, sem_filled_ae;
-sem_t sem_coordinators, sem_tshirt_givers;
+sem_t sem_coordinators, sem_tshirt_givers,rogue_sem;
 
 int get_performer_type(char ch)
 {
@@ -76,6 +76,7 @@ void take_input()
     sem_init(&sem_empty_a, 0, num_stage_a);
     sem_init(&sem_empty_e, 0, num_stage_e);
     sem_init(&sem_filled_ae, 0, 0);
+    sem_init(&rogue_sem, 0, 0);
 
     sem_init(&sem_tshirt_givers, 0, (unsigned int)(num_coordinators));
 }
@@ -143,7 +144,7 @@ int main()
         printf("Arrival is %d\n", perf_ptr[i]->arrival_time);
         perf_ptr[i]->stage_allotted = -1;
         perf_ptr[i]->type = get_performer_type(perf_ptr[i]->instrument_id);
-        perf_ptr[i]->curr_stat = Waiting;
+        perf_ptr[i]->curr_stat = Unarrived;
         perf_ptr[i]->id = i;
         if (perf_ptr[i]->type == perf_a)
         {

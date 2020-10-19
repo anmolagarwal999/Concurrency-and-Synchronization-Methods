@@ -95,6 +95,7 @@ struct performer
     pthread_t thread_obj[3];
     int thr_id[3];
     enum performer_statuses curr_stat;
+    struct timespec * st_arrival,*st_leave;
 };
 
 struct stage

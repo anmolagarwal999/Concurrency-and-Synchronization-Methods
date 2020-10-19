@@ -33,10 +33,18 @@ void *performer_empty_a_stage(void *ptr1)
 {
     int id = *((int *)ptr1);
     struct performer *ptr = perf_ptr[id];
-    sleep(ptr->arrival_time);
+    sem_timedwait(&rogue_sem, perf_ptr[id]->arrival_time);
+    pthread_mutex_lock(&ptr->mutex);
+    if (ptr->curr_stat == Unarrived)
+    {
+        ptr->curr_stat = Waiting;
+        printf(BYEL "Performer %s has arrived and plays instrument %c\n" ANSI_RESET, id, perf_ptr[id]->instrument_id);
+    }
+    pthread_mutex_unlock(&ptr->mutex);
+
     int ret1;
     bool found_stage = false;
-    struct timespec *st = get_abs_time_obj(perf_ptr[id]->perf_time);
+    struct timespec *st = perf_ptr[id]->st_leave;
 
     printf("Entered searching for acqoustic stage\n");
 block1:
@@ -138,9 +146,18 @@ void *performer_empty_e_stage(void *ptr2)
 {
     int id = *((int *)ptr2);
     struct performer *ptr = perf_ptr[id];
-    sleep(ptr->arrival_time);
+
     bool found_stage = false;
-    struct timespec *st = get_abs_time_obj(perf_ptr[id]->perf_time);
+    struct timespec *st = perf_ptr[id]->st_leave;
+    sem_timedwait(&rogue_sem, perf_ptr[id]->arrival_time);
+
+    pthread_mutex_lock(&ptr->mutex);
+    if (ptr->curr_stat == Unarrived)
+    {
+        ptr->curr_stat = Waiting;
+        printf(BYEL "Performer %s has arrived and plays instrument %c\n" ANSI_RESET, id, perf_ptr[id]->instrument_id);
+    }
+    pthread_mutex_unlock(&ptr->mutex);
 
     printf("Entered searching for elctric stage\n");
     int ret2;
@@ -253,14 +270,22 @@ void *performer_filled_ae_stage(void *ptr3)
 {
     int id = *((int *)ptr3);
     struct performer *ptr = perf_ptr[id];
-    sleep(ptr->arrival_time);
-    struct timespec *st = get_abs_time_obj(perf_ptr[id]->perf_time);
+    sem_timedwait(&rogue_sem, perf_ptr[id]->arrival_time);
+
+    pthread_mutex_lock(&ptr->mutex);
+    if (ptr->curr_stat == Unarrived)
+    {
+        ptr->curr_stat = Waiting;
+        printf(BYEL "Performer %s has arrived and plays instrument %c\n" ANSI_RESET, id, perf_ptr[id]->instrument_id);
+    }
+    pthread_mutex_unlock(&ptr->mutex);
+    struct timespec *st = perf_ptr[id]->st_leave;
 
     bool found_stage = false;
     int ret3;
 block3:
     found_stage = false;
-    ret3 = sem_timedwait(&sem_filled_ae,st);
+    ret3 = sem_timedwait(&sem_filled_ae, st);
     //unnecessary  but still -> preliminary check-> acquire mutex to make sure that status does not change while reading
     if (ret3 == 0)
     {
@@ -437,6 +462,8 @@ void dispatch_performers(int id)
     part3;
     printf("GOING TO CREATE THREADS FOR id %d\n", id);
     part3;
+    perf_ptr[id]->st_arrival = get_abs_time_obj(perf_ptr[id]->arrival_time);
+    perf_ptr[id]->st_leave = get_abs_time_obj(perf_ptr[id]->arrival_time + patience_time);
     if (performer_type == perf_a)
     {
         perf_ptr[id]->thr_id[0] = pthread_create(&(perf_ptr[id]->thread_obj[0]), NULL, performer_empty_a_stage, (void *)(&(perf_ptr[id]->id)));
