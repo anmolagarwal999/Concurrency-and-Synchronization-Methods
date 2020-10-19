@@ -42,7 +42,7 @@ void buy_batch_from_company(int id)
                 if (pthread_mutex_trylock(&(comp_ptr[curr_check_id]->mutex)) != 0)
                 {
                     //EBUSY  The mutex could not be acquired because it was already locked.
-                    printf("Company with id %d is busy deciding transit changes, hence did not answer call from centre %d\n", curr_check_id, id);
+                   // printf("Company with id %d is busy deciding transit changes, hence did not answer call from centre %d\n", curr_check_id, id);
                 }
                 else
                 {
@@ -82,7 +82,9 @@ void buy_batch_from_company(int id)
 
 void invite_students(int id)
 {
-
+    printf(ANSI_CYAN"Pharmaceutical Company %d has delivered vaccines to Vaccination zone %d, resuming vaccinations now\n"ANSI_RESET,hosp_ptr[id]->partner_company,id);
+    sleep(1);
+    printf(ANSI_CYAN "Vaccination Zone %d is ready to vaccinate with %d slots\n" ANSI_RESET, id, hosp_ptr[id]->left_vaccines);
     //on entering this function, hospital obviously has some number of new vaccines
     while (hosp_ptr[id]->left_vaccines > 0 && tot_conclusions_left > 0)
     {
@@ -116,7 +118,7 @@ void invite_students(int id)
             if (pthread_mutex_trylock(&(stu_ptr[curr_stu_id]->mutex)) != 0)
             {
                 //EBUSY  The mutex could not be acquired because it was already locked.
-                printf("Student id is busy as is currently in contact with another hospital, hence did not answer call\n");
+               // printf("Student id is busy as is currently in contact with another hospital, hence did not answer call\n");
             }
             else
             {
@@ -124,7 +126,7 @@ void invite_students(int id)
                 if (stu_ptr[curr_stu_id]->curr_stat == 0)
                 {
                     stu_ptr[curr_stu_id]->curr_stat = 1; //ongoing
-                    printf(ANSI_GREEN "Student %d   assigned a slot on the Vaccination Zone %d and waiting to be vaccinated\ns" ANSI_RESET, curr_stu_id, id);
+                    printf(BMAG "Student %d   assigned a slot on the Vaccination Zone %d and waiting to be vaccinated\n" ANSI_RESET, curr_stu_id, id);
                     fflush(stdout);
 
                     pthread_mutex_lock(&hopeful_mutex);
@@ -145,6 +147,7 @@ void invite_students(int id)
         //either all slots have been filled or no students were currently waiting
 
         //LOCK DOEs not seem ro be required for this though
+
         pthread_mutex_lock(&(hosp_ptr[id]->mutex));
         hosp_ptr[id]->left_vaccines -= filled_slots;
         pthread_mutex_unlock(&(hosp_ptr[id]->mutex));
@@ -155,6 +158,8 @@ void invite_students(int id)
     int comp_partner_id = hosp_ptr[id]->partner_company;
     if (hosp_ptr[id]->left_vaccines == 0)
     {
+        printf(ANSI_CYAN "Vaccination Zone %d has run out of vaccines\n" ANSI_RESET, id);
+
         pthread_mutex_lock(&(comp_ptr[comp_partner_id]->mutex));
         comp_ptr[comp_partner_id]->done_batches++;
         pthread_cond_signal(&(comp_ptr[comp_partner_id]->cv));
@@ -173,14 +178,16 @@ void vaccinate_students(int id, int filled_slots)
     //PRINT ENTERING VACCINATION PHASE AND vaccinating students
     //--------------------------------------------------------------
     //Minor sleep to mention moodle requirements to make code more life-like
+    printf(BCYN "Vaccination zone %d entering vaccination phase\n" ANSI_RESET, id);
     sleep(1);
 
     for (int i = 0; i < filled_slots; i++)
     {
-        printf(ANSI_GREEN "Student %d on Vaccination Zone %d has been vaccinated which has success probability %Lf\n" ANSI_RESET, hosp_ptr[id]->curr_served_students[i],
+        printf(ANSI_MAGENTA "Student %d on Vaccination Zone %d has been vaccinated which has success probability %Lf\n" ANSI_RESET, hosp_ptr[id]->curr_served_students[i],
                id, comp_ptr[comp_partner_id]->prob_of_success);
         fflush(stdout);
 
+        //No need to acquire lock as only hospital can change state
         stu_ptr[hosp_ptr[id]->curr_served_students[i]]->curr_stat = 2;
     }
 }

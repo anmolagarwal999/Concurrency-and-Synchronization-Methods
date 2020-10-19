@@ -13,7 +13,7 @@ void prep_stock(int id)
         if (tot_conclusions_left == 0)
         {
             //Comapny no longer wants to prepare vaccine if all students have reached a verdict
-            printf(ANSI_RED"BREAKING PEGASUS: Comapany exiting as all students have reached verdicts\n"ANSI_RESET);
+            printf(ANSI_RED "BREAKING PEGASUS: Comapany exiting as all students have reached verdicts\n" ANSI_RESET);
             break;
         }
 
@@ -24,6 +24,7 @@ void prep_stock(int id)
         printf(ANSI_YELLOW "Company %d\t is preparing %d batches of vaccines of capacity %d each which have success probability %Lf\n" ANSI_RESET, comp_ptr[id]->id, num_batches, comp_ptr[id]->capacity_of_batches, comp_ptr[id]->prob_of_success);
 
         sleep(prep_time);
+
 
         /* Lock needed as if curr_batches_num is set to a finite value 
         and if all stock gets over between the time `while` evaluates
@@ -36,7 +37,7 @@ void prep_stock(int id)
         //batches yet to be fully consumed
         comp_ptr[id]->left_batches_num = comp_ptr[id]->curr_batches_num;
 
-        comp_ptr[id]->done_batches=0;
+        comp_ptr[id]->done_batches = 0;
         printf(ANSI_YELLOW "Company %d\t HAS PREPARED %d batches of vaccines which have success probability %Lf\n" ANSI_RESET, comp_ptr[id]->id, num_batches, comp_ptr[id]->prob_of_success);
 
         dispatch_stock(id);

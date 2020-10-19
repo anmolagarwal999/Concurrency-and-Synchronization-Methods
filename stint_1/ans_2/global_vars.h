@@ -14,12 +14,12 @@
 
 //Regular bold text
 #define BBLK "\e[1;30m"
-#define BRED "\e[1;31m"
-#define BGRN "\e[1;32m"
-#define BYEL "\e[1;33m"
-#define BBLU "\e[1;34m"
-#define BMAG "\e[1;35m"
-#define BCYN "\e[1;36m"
+#define BRED "\e[1;31m"  //positive
+#define BGRN "\e[1;32m"   /// stu start wait
+#define BYEL "\e[1;33m"   /// round of vaccination invite
+#define BBLU "\e[1;34m"  //neg
+#define BMAG "\e[1;35m"  ///student allotted a slot
+#define BCYN "\e[1;36m"  //entering vaccination phase
 #define BWHT "\e[1;37m"
 
 extern int num_hospitals;
