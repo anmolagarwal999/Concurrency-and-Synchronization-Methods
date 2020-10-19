@@ -16,6 +16,13 @@ Manas g 0
 Sriya v 1
 Pahun s 1
 
+5 1 1 4 1 1 5
+Tanvi p 0
+Sudh b 1
+Manas g 0
+Sriya v 1
+Pahun s 1
+
 
 10 1 1 4 2 10 5
 Tanvi p 0

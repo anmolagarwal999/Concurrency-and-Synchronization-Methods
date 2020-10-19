@@ -27,13 +27,14 @@ void collect_tshirt(int id)
     perf_ptr[id]->curr_stat = Left_show;
     pthread_mutex_unlock(&perf_ptr[id]->mutex);
     sem_post(&sem_tshirt_givers);
+    printf(BCYN "Performer %s collected TSHIRT and left the show\n" ANSI_RESET, perf_ptr[id]->name);
 }
 
 void *performer_empty_a_stage(void *ptr1)
 {
     int id = *((int *)ptr1);
     struct performer *ptr = perf_ptr[id];
-    printf(ANSI_RED "rogue id is %d\n" ANSI_RESET, id);
+    // printf(ANSI_RED "rogue id is %d\n" ANSI_RESET, id);
     sem_timedwait(&rogue_sem, perf_ptr[id]->st_arrival);
     pthread_mutex_lock(&ptr->mutex);
     if (ptr->curr_stat == Unarrived)
@@ -47,7 +48,7 @@ void *performer_empty_a_stage(void *ptr1)
     bool found_stage = false;
     struct timespec *st = perf_ptr[id]->st_leave;
 
-    printf("Entered searching for acqoustic stage\n");
+    //printf("Entered searching for acqoustic stage\n");
 block1:
     found_stage = false;
     ret1 = sem_timedwait(&sem_empty_a, st);
@@ -115,7 +116,7 @@ block1:
         if (!found_stage)
         {
             printf("Extremely BAD SHIT HAS HAPPENED -> Moriarty\n");
-            exit(0);
+            // exit(0);
 
             //goto block1->redundant but keep for future debugging
             goto block1;
@@ -147,7 +148,7 @@ void *performer_empty_e_stage(void *ptr2)
 {
     int id = *((int *)ptr2);
     struct performer *ptr = perf_ptr[id];
-    printf(ANSI_RED "rogue id is %d\n" ANSI_RESET, id);
+    //printf(ANSI_RED "rogue id is %d\n" ANSI_RESET, id);
 
     bool found_stage = false;
     struct timespec *st = perf_ptr[id]->st_leave;
@@ -161,7 +162,7 @@ void *performer_empty_e_stage(void *ptr2)
     }
     pthread_mutex_unlock(&ptr->mutex);
 
-    printf("Entered searching for elctric stage\n");
+    // printf("Entered searching for elctric stage\n");
     int ret2;
 
 block2:
@@ -180,7 +181,7 @@ block2:
             //Neceassry to unlock as other redundant thread may need it
 
             //increment semapore for false alarm
-            printf(ANSI_RED "FALSE ALARM . I AM PRIVILEGED status is %d\n" ANSI_RESET, ptr->curr_stat);
+            // printf(ANSI_RED "FALSE ALARM . I AM PRIVILEGED status is %d\n" ANSI_RESET, ptr->curr_stat);
             sem_post(&sem_empty_e);
             pthread_mutex_unlock(&ptr->mutex);
             return NULL;
@@ -239,14 +240,14 @@ block2:
         if (!found_stage)
         {
             printf("Extremely BAD SHIT HAS HAPPENED -> Red John\n");
-            exit(0);
+            //exit(0);
 
             //goto block2->redundant but keep for future debugging
             goto block2;
         }
         else
         {
-            printf("I have been able to find a stage\n");
+            // printf("I have been able to find a stage\n");
             give_leader_performance(id);
         }
     }
@@ -308,7 +309,7 @@ block3:
 
         for (int i = 0; i < tot_num_stages && found_stage == false; i++)
         {
-            printf("trying to acquire lock for DUEL FUNC %d\n", i);
+            //printf("trying to acquire lock for DUEL FUNC %d\n", i);
             pthread_mutex_lock(&st_ptr[i]->mutex);
             // enum stage_statuses
             // {
@@ -357,7 +358,7 @@ block3:
 
         if (!found_stage)
         {
-            printf("False alarm -> Loki\n");
+            // printf("False alarm -> Loki\n");
             goto block3;
         }
         else
@@ -392,8 +393,8 @@ void give_leader_performance(int id)
     {
         //do not invite any other singer for duel
 
-        printf("SOLO SINGER TIME IS %d\n", perf_ptr[id]->perf_time);
-        printf(ANSI_GREEN "Singer %s is starting solo on stage id %d for time %d secs\n" ANSI_RESET, ptr->name, stage_id,  ptr->perf_time);
+        //printf("SOLO SINGER TIME IS %d\n", perf_ptr[id]->perf_time);
+        printf(ANSI_GREEN "Singer %s is starting solo on stage id %d for time %d secs\n" ANSI_RESET, ptr->name, stage_id, ptr->perf_time);
     }
     else
     {
@@ -441,12 +442,12 @@ void give_leader_performance(int id)
     st_ptr[stage_id]->curr_stat = Unoccupied;
     if (st_ptr[stage_id]->type == TYPE_A)
     {
-        printf("incrementing sempahore of type A\n");
+        // printf("incrementing sempahore of type A\n");
         sem_post(&sem_empty_a);
     }
     else
     {
-        printf("incrementing sempahore of type E\n");
+        // printf("incrementing sempahore of type E\n");
 
         sem_post(&sem_empty_e);
     }
@@ -463,9 +464,9 @@ void give_leader_performance(int id)
 void dispatch_performers(int id)
 {
     int performer_type = perf_ptr[id]->type;
-    part3;
-    printf("GOING TO CREATE THREADS FOR id %d\n", id);
-    part3;
+    // part3;
+    // printf("GOING TO CREATE THREADS FOR id %d\n", id);
+    // part3;
     perf_ptr[id]->st_arrival = get_abs_time_obj(perf_ptr[id]->arrival_time);
     perf_ptr[id]->st_leave = get_abs_time_obj(perf_ptr[id]->arrival_time + patience_time);
     if (performer_type == perf_a)

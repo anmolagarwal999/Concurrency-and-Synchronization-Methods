@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -g -c
 # CFLAGS = -Wall -Werror -g -c
 LDFLAGS =
-OBJFILES = main.o utils.o performers.o stages.o
+OBJFILES = main.o utils.o performers.o
 TARGET = a
 
 all:$(TARGET)
@@ -18,9 +18,6 @@ utils.o: utils.c
 
 performers.o: performers.c
 	$(CC) $(CFLAGS) performers.c
-
-stages.o: stages.c
-	$(CC) $(CFLAGS) stages.c
 
 
 

@@ -91,7 +91,6 @@ struct performer
     int stage_allotted;
     int perf_time;
     pthread_mutex_t mutex;
-    pthread_cond_t cv;
     pthread_t thread_obj[3];
     int thr_id[3];
     enum performer_statuses curr_stat;
