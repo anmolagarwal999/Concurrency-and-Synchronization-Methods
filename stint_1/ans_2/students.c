@@ -36,12 +36,21 @@ void seek_hospital(int id)
     {
         //keep on trying unless 3 failures or a success
         printf(ANSI_GREEN "Student id %d\t has arrived for round %d of vaccination\n" ANSI_RESET, id, stu_ptr[id]->rounds_already + 1);
+       
+        //Not necessary to lock but don't want a student to miss a hospital opportunity
+        pthread_mutex_lock(&(stu_ptr[id]->mutex));
         stu_ptr[id]->curr_stat = 0; //student has started waiting
+        pthread_mutex_unlock(&(stu_ptr[id]->mutex));
+
+      
+      
         printf(ANSI_GREEN "Student id %d\t is waiting to be allocated a slot in a Vaccination Zone\n" ANSI_RESET, id);
 
+        //Student hopes to get a vaccine
         pthread_mutex_lock(&hopeful_mutex);
         hopeful_students_num++;
         pthread_mutex_unlock(&hopeful_mutex);
+
         while (stu_ptr[id]->curr_stat != 2)
         {
             //pass

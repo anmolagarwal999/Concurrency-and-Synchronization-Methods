@@ -9,11 +9,9 @@ int hopeful_students_num;
 pthread_mutex_t conclusions_mutex;
 pthread_mutex_t hopeful_mutex;
 
-int w_min_prepare_time=2,w_max_prepare_time=5;
-int r_min_val=1,r_max_val=5;
-int p_min_val=10,p_max_val=20;
-
-
+int w_min_prepare_time = 2, w_max_prepare_time = 5;
+int r_min_val = 1, r_max_val = 5;
+int p_min_val = 10, p_max_val = 20;
 
 void take_input()
 {
@@ -29,6 +27,30 @@ void take_input()
     hopeful_students_num = 0;
     pthread_mutex_init(&conclusions_mutex, NULL);
     pthread_mutex_init(&hopeful_mutex, NULL);
+
+    if (num_companies == 0)
+    {
+        printf(ANSI_RED "No company is present to manufacture vaccine\n" ANSI_RESET);
+        printf(BMAG "Simulation Over\n" ANSI_RESET);
+
+        exit(0);
+    }
+
+    if (num_hospitals == 0)
+    {
+        printf(ANSI_RED "No vaccination zone is present to administer vaccine\n" ANSI_RESET);
+        printf(BMAG "Simulation Over\n" ANSI_RESET);
+
+        exit(0);
+    }
+
+    if (num_students == 0)
+    {
+        printf(ANSI_RED "No students are coming to college it seems. No need of vaccine camps\n" ANSI_RESET);
+        printf(BMAG "Simulation Over\n" ANSI_RESET);
+
+        exit(0);
+    }
 }
 
 int main()
@@ -113,6 +135,6 @@ int main()
     printf("HOSPITALS HAVE JOINED\n");
     fflush(stdout);
 
-    printf(BMAG "Simulation Over" ANSI_RESET);
+    printf(BMAG "Simulation Over\n" ANSI_RESET);
     fflush(stdout);
 }

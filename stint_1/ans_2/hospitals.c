@@ -20,7 +20,7 @@ int get_min(int a, int b)
 }
 void buy_batch_from_company(int id)
 {
-    //keep buying until all college students have been vaccinated
+    //keep buying until all college students have reached verdicts
     while (tot_conclusions_left > 0)
     {
         int curr_check_id = 0;
@@ -37,13 +37,16 @@ void buy_batch_from_company(int id)
                 // pthread_mutex_lock(&(comp_ptr[curr_check_id]->mutex));
                 // if company has an unsold batch left
                 //try locking, but if not available, then rather than waiting, move on
-                if (pthread_mutex_trylock(&(comp_ptr[curr_check_id]->mutex)) == EBUSY)
+                // if (pthread_mutex_trylock(&(comp_ptr[curr_check_id]->mutex)) == EBUSY)
+
+                if (pthread_mutex_trylock(&(comp_ptr[curr_check_id]->mutex)) != 0)
                 {
                     //EBUSY  The mutex could not be acquired because it was already locked.
                     printf("Company with id %d is busy deciding transit changes, hence did not answer call from centre %d\n", curr_check_id, id);
                 }
                 else
                 {
+                    //company mutex acquired
                     if (comp_ptr[curr_check_id]->left_batches_num > 0)
                     {
                         printf(ANSI_YELLOW "Company %d\t is delivering a vaccine batch to Vaccination Zone %d which has success prob:%Lf\n" ANSI_RESET, curr_check_id, id, comp_ptr[curr_check_id]->prob_of_success);
@@ -58,6 +61,8 @@ void buy_batch_from_company(int id)
                     pthread_mutex_unlock(&(comp_ptr[curr_check_id]->mutex));
                 }
                 curr_check_id = (curr_check_id + 1) % num_companies;
+
+                //I don't need to search for a company anymore as all studetns have reached verdicts
                 if (tot_conclusions_left <= 0)
                 {
                     break;
@@ -82,7 +87,10 @@ void invite_students(int id)
     while (hosp_ptr[id]->left_vaccines > 0 && tot_conclusions_left > 0)
     {
         // debug(tot_conclusions_left);
+        //No need to acquire mutex for hopeful_students as you are just reading the value and you don't mind the value being changed
         int up_lim = (int)get_min(get_min(8, hosp_ptr[id]->left_vaccines), hopeful_students_num);
+
+        //may happen due to hopeful students decreasing
         if (up_lim <= 0)
         {
             up_lim = 2;
@@ -95,11 +103,17 @@ void invite_students(int id)
         {
             hosp_ptr[id]->curr_served_students[j] = -1;
         }
-        while (filled_slots < curr_slots && hopeful_students_num > 0)
+        while (filled_slots < curr_slots && tot_conclusions_left > 0)
         {
+
+            //break only if you have some students to vaccinate and no hopeful students are left
+            if (hopeful_students_num <= 0 && filled_slots > 0)
+            {
+                break;
+            }
             //start filling students
             //try locking, but if not available, then rather than waiting, move on
-            if (pthread_mutex_trylock(&(stu_ptr[curr_stu_id]->mutex)) == EBUSY)
+            if (pthread_mutex_trylock(&(stu_ptr[curr_stu_id]->mutex)) != 0)
             {
                 //EBUSY  The mutex could not be acquired because it was already locked.
                 printf("Student id is busy as is currently in contact with another hospital, hence did not answer call\n");
@@ -112,9 +126,12 @@ void invite_students(int id)
                     stu_ptr[curr_stu_id]->curr_stat = 1; //ongoing
                     printf(ANSI_GREEN "Student %d   assigned a slot on the Vaccination Zone %d and waiting to be vaccinated\ns" ANSI_RESET, curr_stu_id, id);
                     fflush(stdout);
+
                     pthread_mutex_lock(&hopeful_mutex);
+                    //Student is no longer needs to hopeful
                     hopeful_students_num--;
                     pthread_mutex_unlock(&hopeful_mutex);
+
                     hosp_ptr[id]->curr_served_students[filled_slots] = curr_stu_id;
                     filled_slots++;
                     stu_ptr[curr_stu_id]->vaccine_comp_id = hosp_ptr[id]->partner_company;
@@ -135,6 +152,15 @@ void invite_students(int id)
         vaccinate_students(id, filled_slots);
     }
 
+    int comp_partner_id = hosp_ptr[id]->partner_company;
+    if (hosp_ptr[id]->left_vaccines == 0)
+    {
+        pthread_mutex_lock(&(comp_ptr[comp_partner_id]->mutex));
+        comp_ptr[comp_partner_id]->done_batches++;
+        pthread_cond_signal(&(comp_ptr[comp_partner_id]->cv));
+        pthread_mutex_unlock(&(comp_ptr[comp_partner_id]->mutex));
+    }
+
     return;
 
     //try to secure next batch
@@ -143,6 +169,12 @@ void invite_students(int id)
 void vaccinate_students(int id, int filled_slots)
 {
     int comp_partner_id = hosp_ptr[id]->partner_company;
+
+    //PRINT ENTERING VACCINATION PHASE AND vaccinating students
+    //--------------------------------------------------------------
+    //Minor sleep to mention moodle requirements to make code more life-like
+    sleep(1);
+
     for (int i = 0; i < filled_slots; i++)
     {
         printf(ANSI_GREEN "Student %d on Vaccination Zone %d has been vaccinated which has success probability %Lf\n" ANSI_RESET, hosp_ptr[id]->curr_served_students[i],
@@ -151,10 +183,6 @@ void vaccinate_students(int id, int filled_slots)
 
         stu_ptr[hosp_ptr[id]->curr_served_students[i]]->curr_stat = 2;
     }
-    pthread_mutex_lock(&(comp_ptr[comp_partner_id]->mutex));
-    comp_ptr[comp_partner_id]->done_batches++;
-    pthread_cond_signal(&(comp_ptr[comp_partner_id]->cv));
-    pthread_mutex_unlock(&(comp_ptr[comp_partner_id]->mutex));
 }
 
 void *init_hospitals(void *ptr)
