@@ -2,6 +2,8 @@
 
 These code snippets in C demonstrate the use of multithreading and synchronisation methods such as  ` mutex locks,conditional variables, semaphores` etc. to simulate several real life processes.
 
+**One can check the respective folders for detailed README for each simulation.**
+
 ## Question 1: Concurrent Merge Sort
 Exploring performance comparison between normal mergesort, mergesort using forked processes and mergesort using threads.
 
